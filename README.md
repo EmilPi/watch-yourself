@@ -6,7 +6,9 @@ This tool currently
 * Regularly makes photos with your webcam
 * Regularly stores your currently opened window in the text file
 
-## DEPENDENCIES:
+## DEPENDENCIES AND REQUIREMENTS:
+Python 3 should be installed on system and python.exe should be added to your PATH.
+
 COMMON:
 * opencv-python
 
