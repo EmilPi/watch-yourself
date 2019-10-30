@@ -8,9 +8,10 @@ This tool currently
 
 ## DEPENDENCIES:
 COMMON:
-    * opencv-python
+* opencv-python
+
 WINDOWS 10:
-    * pywin
+* pywin
 
 ## CURRENT ISSUES
 1. **No Linux support yet!**
