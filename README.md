@@ -1,6 +1,9 @@
 # watch-yourself
 A tool to watch and analyse your PC activity.
 
+New contributors are most welcome! Anyone intersted in the topics below, please PM.
+This is solely open-source project. The purpose is to make people better reflect on how they spend time of their lives and raise self-awareness.
+
 Want to see your daily computer usage reports? This tool is intended right for this!
 This tool currently
 * Regularly makes photos with your webcam
