@@ -1,6 +1,6 @@
 # Project storage files
 windows.txt
-
+archive
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
