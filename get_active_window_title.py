@@ -8,7 +8,7 @@
 # Make sure win32gui is available
 
 # For Mac:
-# Make sure AppKit is available
+# Make sure pygetwindow is available
 
 """Find the currently active window."""
 
@@ -21,9 +21,8 @@ from cross_platform import get_cmd_output
 #                     stream=sys.stdout)
 
 
-# TODO this does not refresh at all!
 def get_active_window_mac():
-    return NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
+    return gw.getActiveWindow()
 
 
 def get_active_window_linux_failing():
@@ -93,7 +92,7 @@ elif IS_WINDOWS:
     get_active_window = get_active_window_win
 elif IS_MAC:
     # http://stackoverflow.com/a/373310/562769
-    from AppKit import NSWorkspace
+    import pygetwindow as gw
 
     get_active_window = get_active_window_mac
 else:
