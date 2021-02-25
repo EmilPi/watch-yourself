@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AndroidStatsExporter</string>
+    <string name="open_app_usage_setting">Open settings and let the app access usage history</string>
+</resources>
