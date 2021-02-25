@@ -13,7 +13,8 @@
 """Find the currently active window."""
 
 import logging
-import sys
+from cross_platform import IS_LINUX, IS_WINDOWS, IS_MAC, PLATFORM
+from cross_platform import get_cmd_output
 
 # logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
 #                     level=logging.DEBUG,
@@ -45,15 +46,6 @@ def get_active_window_linux_failing():
                 active_window_name = f.read()
 
 
-def get_cmd_output(cmd):
-    """
-    assuming no spaces in cmd
-    :param cmd:
-    :return:
-    """
-    if isinstance(cmd, str):
-        cmd = cmd.split(' ')
-    return subprocess.check_output(cmd).decode('utf-8')[:-1]
 
 def get_active_window_linux_working():
     window_id = get_cmd_output('xdotool getwindowfocus')
@@ -71,7 +63,7 @@ def get_active_window_win():
     return win32gui.GetWindowText(window)
 
 
-if sys.platform in ['linux', 'linux2']:
+if IS_LINUX:
     # Alternatives: http://unix.stackexchange.com/q/38867/4784
 
     # try:
@@ -91,22 +83,18 @@ if sys.platform in ['linux', 'linux2']:
     #         gi = None
     # get_active_window = get_active_window_linux_failing
 
-    import subprocess
-
     get_active_window = get_active_window_linux_working
 
-elif sys.platform in ['Windows', 'win32', 'cygwin']:
+elif IS_WINDOWS:
     # http://stackoverflow.com/a/608814/562769
     import win32gui
 
     get_active_window = get_active_window_win
-elif sys.platform in ['Mac', 'darwin', 'os2', 'os2emx']:
+elif IS_MAC:
     # http://stackoverflow.com/a/373310/562769
     from AppKit import NSWorkspace
 
     get_active_window = get_active_window_mac
 else:
-    print("sys.platform={platform} is unknown. Please report."
-          .format(platform=sys.platform))
-    print(sys.version)
+    print('Unknown platform:', PLATFORM)
     exit(1)
