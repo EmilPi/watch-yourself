@@ -2,7 +2,7 @@
 from time import sleep, strftime
 import json
 
-import pyautogui as pygui
+from utils import close_tab, close_window
 
 from get_active_window_title import get_active_window
 from get_idle_time import get_idle_time
@@ -11,8 +11,9 @@ import os
 
 import sys
 
-no_webcam = '--log-titles-only' in sys.argv
+no_webcam = no_screenshot = '--log-titles-only' in sys.argv
 if not no_webcam:
+    import pyautogui as pygui
     import cv2
 
 
@@ -30,8 +31,9 @@ SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 
 class MultiLogger(object):
     MIN_IDLE_LOGGING_INTERVAL = 10
-    def __init__(self, no_webcam=False):
+    def __init__(self, no_webcam=False, no_screenshot=False):
         self.no_webcam = no_webcam
+        self.no_screenshot = no_screenshot
         if self.no_webcam:
             self.cap = None
         else:
@@ -62,6 +64,8 @@ class MultiLogger(object):
         ))
 
     def make_screenshot(self):
+        if self.no_screenshot:
+            return
         # NotImplementedError: "scrot" must be installed to use screenshot functions in Linux. Run: sudo apt-get install scrot
         img_path = '%s/screen_%s.png' % (
             IMG_PATH,
@@ -108,10 +112,10 @@ class MultiBlocker(object):
         self.BLACKLISTED_PAGES_PARTS = settings['BLACKLISTED_PAGES_PARTS']
 
     def close_tab(self):
-        pygui.hotkey('ctrl', 'w')
+        close_tab()
 
     def close_window(self):
-        pygui.hotkey('alt', 'F4')
+        close_tab()
 
     def is_bad_browser_window(self, window_title):
         return any([window_title.startswith(
@@ -124,7 +128,7 @@ class MultiBlocker(object):
         os.system('notify-send "Your fate is in danger!" "You are wasting time that is given to you!"')
 
 
-multi_logger = MultiLogger(no_webcam=no_webcam)
+multi_logger = MultiLogger(no_webcam=no_webcam, no_screenshot=no_screenshot)
 multi_blocker = MultiBlocker()
 browser_violation_count = 0
 print('starting watch cycle')

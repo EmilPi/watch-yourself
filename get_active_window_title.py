@@ -21,6 +21,7 @@ from cross_platform import get_cmd_output
 #                     stream=sys.stdout)
 
 
+# TODO this does not refresh at all!
 def get_active_window_mac():
     return NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
 

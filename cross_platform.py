@@ -16,12 +16,16 @@ elif sys.platform in ['Mac', 'darwin', 'os2', 'os2emx']:
 else:
     print("sys.platform=%s is unknown. Please report." % sys.platform)
 
-
-def get_cmd_output(cmd):
+import os
+def get_cmd_output(cmd, temp_file=None, **kwargs):
     """
     :param cmd:
     :return:
     """
+    if temp_file:
+        os.system('%s > %s' % (cmd, temp_file))
+        with open(temp_file) as f:
+            return f.read()
     if isinstance(cmd, str):
         cmd = cmd.split(' ')
-    return subprocess.check_output(cmd).decode('utf-8')[:-1]
+    return subprocess.check_output(cmd, **kwargs).decode('utf-8')[:-1]
