@@ -3,9 +3,9 @@ from time import sleep, strftime
 import json
 
 import pyautogui as pygui
-from idle_time import IdleMonitor
 
 from get_active_window_title import get_active_window
+from get_idle_time import get_idle_time
 
 import os
 
@@ -40,7 +40,6 @@ class MultiLogger(object):
             for i in range(30):
                 self.cap.read()
         self.logfile = open(LOG_PATH, 'a', encoding='utf-8')
-        self.idle_monitor = IdleMonitor.get_monitor()
         self.last_idle_time = 0
         self.last_window_title = ''
 
@@ -79,7 +78,7 @@ class MultiLogger(object):
             self._datetime_str()), frame)
 
     def log_idle(self):
-        idle_time = self.idle_monitor.get_idle_time()
+        idle_time = get_idle_time()
         if idle_time > 2 * self.last_idle_time \
         or idle_time < self.last_idle_time:
             self.logfile.write('\t%.3f' % idle_time)
