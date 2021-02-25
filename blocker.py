@@ -2,13 +2,19 @@
 from time import sleep, strftime
 import json
 
-import cv2
 import pyautogui as pygui
 from idle_time import IdleMonitor
 
 from get_active_window_title import get_active_window
 
 import os
+
+import sys
+
+no_webcam = '--log-titles-only' in sys.argv
+if not no_webcam:
+    import cv2
+
 
 SCRIPT_PATH = os.sep.join(__file__.rsplit(os.sep, 1)[:-1])
 IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
@@ -24,11 +30,15 @@ SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 
 class MultiLogger(object):
     MIN_IDLE_LOGGING_INTERVAL = 10
-    def __init__(self):
-        self.cap = cv2.VideoCapture(0)
-        # camera warmup, preventing blank images
-        for i in range(30):
-            self.cap.read()
+    def __init__(self, no_webcam=False):
+        self.no_webcam = no_webcam
+        if self.no_webcam:
+            self.cap = None
+        else:
+            self.cap = cv2.VideoCapture(0)
+            # camera warmup, preventing blank images
+            for i in range(30):
+                self.cap.read()
         self.logfile = open(LOG_PATH, 'a', encoding='utf-8')
         self.idle_monitor = IdleMonitor.get_monitor()
         self.last_idle_time = 0
@@ -38,7 +48,8 @@ class MultiLogger(object):
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cap.release()
+        if self.cap:
+            self.cap.release()
         self.logfile.close()
 
     @staticmethod
@@ -60,6 +71,8 @@ class MultiLogger(object):
         screenshot.save(img_path)
 
     def make_webcam_photo(self):
+        if self.cap is None:
+            return
         ret, frame = self.cap.read()
         cv2.imwrite('%s/webcam_%s.png' % (
             IMG_PATH,
@@ -112,7 +125,7 @@ class MultiBlocker(object):
         os.system('notify-send "Your fate is in danger!" "You are wasting time that is given to you!"')
 
 
-multi_logger = MultiLogger()
+multi_logger = MultiLogger(no_webcam=no_webcam)
 multi_blocker = MultiBlocker()
 browser_violation_count = 0
 print('starting watch cycle')
