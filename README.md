@@ -55,5 +55,6 @@ First, you can test if the script works. Double click the shortcut you created i
 ## CHANGELOG
 
 ### Version 0.1:
+### Version 0.2:
+Added blocker script - only for Linux.
 
-Nothing here yet.
