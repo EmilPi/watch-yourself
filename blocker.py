@@ -3,24 +3,27 @@ from time import sleep, strftime
 import json
 
 from utils import close_tab, close_window
+from cross_platform import notify
 
 from get_active_window_title import get_active_window
 from get_idle_time import get_idle_time
+import pyautogui as pygui
 
 import os
 
 import sys
 
 no_webcam = no_screenshot = '--log-titles-only' in sys.argv
-if not no_webcam:
-    import pyautogui as pygui
-    import cv2
 
+if not no_webcam:
+    import cv2
 
 SCRIPT_PATH = os.sep.join(__file__.rsplit(os.sep, 1)[:-1])
 IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
 LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
 SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
+
+
 # pid = os.getpid()
 # PIDAPP="/home/emil/Desktop/Projects/TodoApps/watch-yourself/pidfile.pid"
 # op = open(PIDAPP, "w")
@@ -28,9 +31,9 @@ SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 # op.close()
 
 
-
 class MultiLogger(object):
     MIN_IDLE_LOGGING_INTERVAL = 10
+
     def __init__(self, no_webcam=False, no_screenshot=False):
         self.no_webcam = no_webcam
         self.no_screenshot = no_screenshot
@@ -84,7 +87,7 @@ class MultiLogger(object):
     def log_idle(self):
         idle_time = get_idle_time()
         if idle_time > 2 * self.last_idle_time \
-        or idle_time < self.last_idle_time:
+                or idle_time < self.last_idle_time:
             self.logfile.write('\t%.3f' % idle_time)
             if idle_time > self.MIN_IDLE_LOGGING_INTERVAL:
                 self.log_pictures()
@@ -115,17 +118,20 @@ class MultiBlocker(object):
         close_tab()
 
     def close_window(self):
-        close_tab()
+        close_window()
 
     def is_bad_browser_window(self, window_title):
-        return any([window_title.startswith(
-            browser_binary_name)
-            for browser_binary_name in self.BROWSERS_LIST]) \
-               and any([blacklisted_part in window_title
-                        for blacklisted_part in self.BLACKLISTED_PAGES_PARTS])
+        is_browser = any([window_title.lower().startswith(
+            browser_binary_name.lower())
+            for browser_binary_name in self.BROWSERS_LIST])
+        return is_browser \
+            and any([
+                blacklisted_part in window_title
+                for blacklisted_part in self.BLACKLISTED_PAGES_PARTS
+        ])
 
     def notify_about_violation(self):
-        os.system('notify-send "Your fate is in danger!" "You are wasting time that is given to you!"')
+        notify("You are wasting time that is given to you!", "Your very fate is in danger!")
 
 
 multi_logger = MultiLogger(no_webcam=no_webcam, no_screenshot=no_screenshot)

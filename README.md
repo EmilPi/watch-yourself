@@ -57,4 +57,5 @@ First, you can test if the script works. Double click the shortcut you created i
 ### Version 0.1:
 ### Version 0.2:
 Added blocker script - only for Linux.
-
+### Version 0.2.1:
+Added blocker script for MacOS too.

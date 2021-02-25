@@ -29,3 +29,14 @@ def get_cmd_output(cmd, temp_file=None, **kwargs):
     if isinstance(cmd, str):
         cmd = cmd.split(' ')
     return subprocess.check_output(cmd, **kwargs).decode('utf-8')[:-1]
+
+import os
+def notify(message, topic=''):
+    if IS_LINUX:
+        os.system('notify-send "%s" "%s"' % (topic, message))
+
+    elif IS_MAC:
+        os.system("osascript -e 'display notification \"%s\" sound name \"Submarine\"'" % message)
+    else:
+        print("TODO")
+        exit(1)

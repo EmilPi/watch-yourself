@@ -1,7 +1,9 @@
 {
   "BROWSERS_LIST": [
+    "Safari",
     "firefox",
     "chromium",
+    "chrome",
     "opera"
   ],
   "BLACKLISTED_PAGES_PARTS": [
