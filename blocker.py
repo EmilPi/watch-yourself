@@ -19,7 +19,7 @@ no_webcam += '--no-webcam' in sys.argv
 if not no_webcam:
     import cv2
 
-SCRIPT_PATH = os.sep.join(__file__.rsplit(os.sep, 1)[:-1])
+SCRIPT_PATH = '.'
 IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
 LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
 SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
