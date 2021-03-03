@@ -14,6 +14,7 @@ import os
 import sys
 
 no_webcam = no_screenshot = '--log-titles-only' in sys.argv
+no_webcam *= not('--no-webcam' in sys.argv)
 
 if not no_webcam:
     import cv2
