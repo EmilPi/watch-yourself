@@ -14,7 +14,7 @@ import os
 import sys
 
 no_webcam = no_screenshot = '--log-titles-only' in sys.argv
-no_webcam *= not('--no-webcam' in sys.argv)
+no_webcam += '--no-webcam' in sys.argv
 
 if not no_webcam:
     import cv2
@@ -81,6 +81,9 @@ class MultiLogger(object):
         if self.cap is None:
             return
         ret, frame = self.cap.read()
+        if not ret:
+            print("WARNING: webcam didn't return good photo")
+            return
         cv2.imwrite('%s/webcam_%s.png' % (
             IMG_PATH,
             self._datetime_str()), frame)
