@@ -3,7 +3,10 @@ from cross_platform import IS_MAC, get_cmd_output
 
 def get_idle_time_mac_os():
     out = get_cmd_output("ioreg -c IOHIDSystem | awk '/HIDIdleTime/ {print $NF/1000000000; exit}'", temp_file='/tmp/idle_time', shell=True)
-    return float(out.replace(',', '.'))
+    try:
+        return float(out.replace(',', '.'))
+    except:
+        return '?'
 
 
 if IS_MAC:
