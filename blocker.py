@@ -66,6 +66,7 @@ class MultiLogger(object):
             self._datetime_str(),
             entry_text
         ))
+        self.logfile.flush()
 
     def make_screenshot(self):
         if self.no_screenshot:
