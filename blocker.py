@@ -59,7 +59,7 @@ class MultiLogger(object):
 
     @staticmethod
     def _datetime_str():
-        return strftime('%y-%m-%d %H:%M:%S')
+        return strftime('%y_%m_%d__%H_%M_%S')
 
     def log_entry(self, entry_text):
         self.logfile.write('\n%s : %s' % (
@@ -71,7 +71,7 @@ class MultiLogger(object):
         if self.no_screenshot:
             return
         # NotImplementedError: "scrot" must be installed to use screenshot functions in Linux. Run: sudo apt-get install scrot
-        img_path = '%s/screen_%s.png' % (
+        img_path = '%s/screen__%s.png' % (
             IMG_PATH,
             self._datetime_str())
         screenshot = pygui.screenshot(img_path)
@@ -84,7 +84,7 @@ class MultiLogger(object):
         if not ret:
             print("WARNING: webcam didn't return good photo")
             return
-        cv2.imwrite('%s/webcam_%s.png' % (
+        cv2.imwrite('%s/webcam__%s.png' % (
             IMG_PATH,
             self._datetime_str()), frame)
 
