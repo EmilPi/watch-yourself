@@ -25,11 +25,6 @@ LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
 SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 
 
-# pid = os.getpid()
-# PIDAPP="/home/emil/Desktop/Projects/TodoApps/watch-yourself/pidfile.pid"
-# op = open(PIDAPP, "w")
-# op.write("%s" % pid)
-# op.close()
 
 
 class MultiLogger(object):
@@ -72,8 +67,9 @@ class MultiLogger(object):
         if self.no_screenshot:
             return
         # NotImplementedError: "scrot" must be installed to use screenshot functions in Linux. Run: sudo apt-get install scrot
-        img_path = '%s/screen__%s.png' % (
+        img_path = '%s%sscreen__%s.png' % (
             IMG_PATH,
+            os.sep,
             self._datetime_str())
         screenshot = pygui.screenshot(img_path)
         screenshot.save(img_path)
@@ -85,8 +81,9 @@ class MultiLogger(object):
         if not ret:
             print("WARNING: webcam didn't return good photo")
             return
-        cv2.imwrite('%s/webcam__%s.png' % (
+        cv2.imwrite('%s%swebcam__%s.png' % (
             IMG_PATH,
+            os.sep,
             self._datetime_str()), frame)
 
     def log_idle(self):
