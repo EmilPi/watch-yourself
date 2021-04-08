@@ -1,0 +1,19 @@
+{
+  "BROWSERS_LIST": [
+    "Safari",
+    "firefox",
+    "chromium",
+    "chrome",
+    "opera"
+  ],
+  "BLACKLISTED_PAGES_PARTS": [
+    "YouTube",
+    "Habr",
+    "Хабр",
+    "Yandex Zen",
+    "Яндекс Дзен",
+    "Яндекс.Видео",
+    "Новости",
+    "Попаданцев.нет"
+  ]
+}
