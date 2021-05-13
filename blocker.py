@@ -24,8 +24,15 @@ IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
 LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
 SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 
+# Command '['xdotool', 'getwindowpid', '6291465']' returned non-zero exit status 1.
+# Traceback (most recent call last):
+#   File "blocker.py", line 152, in <module>
+#     if multi_logger.window_changed(window_title):
+# NameError: name 'window_title' is not defined
 
-
+# TODO - measure time spent in apps/sites for today
+# TODO - add time limits on apps/sites instead of blacklisting and instant closing
+# TODO - close apps/sites only after time spent in them exceeds limits
 
 class MultiLogger(object):
     MIN_IDLE_LOGGING_INTERVAL = 10

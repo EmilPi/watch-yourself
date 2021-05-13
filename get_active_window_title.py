@@ -49,6 +49,7 @@ def get_active_window_linux_failing():
 
 def get_active_window_linux_working():
     window_id = get_cmd_output('xdotool getwindowfocus')
+    # TODO - handle special window id (e.g. 6291465 - what is it?)
     active_window_pid = get_cmd_output('xdotool getwindowpid %s' % window_id)
     process_name = get_cmd_output('cat /proc/%s/comm' % active_window_pid)
     process_cmdline = get_cmd_output('cat /proc/%s/cmdline' % active_window_pid)
