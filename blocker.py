@@ -163,6 +163,7 @@ while True:
 
     if multi_logger.window_changed(window_title):
         multi_logger.log_all(window_title)
+        print(window_title)
     if multi_blocker.is_bad_browser_window(window_title):
         browser_violation_count += 1
     else:
