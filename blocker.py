@@ -145,8 +145,11 @@ class MultiBlocker(object):
             close_window()
 
     def is_bad_browser_window(self, window_title):
-        is_browser = any([window_title.lower().startswith(
-            browser_binary_name.lower())
+        is_browser = any([
+            (
+                window_title.lower().startswith(browser_binary_name.lower()) or
+                window_title.lower().endswith(browser_binary_name.lower())
+            )
             for browser_binary_name in self.BROWSERS_LIST])
         return is_browser \
             and any([
