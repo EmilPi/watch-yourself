@@ -1,4 +1,4 @@
-#!/bin/python3
+#!usr/bin/env python3
 from time import sleep, strftime
 import json
 
@@ -18,7 +18,7 @@ import os
 import sys
 
 no_webcam = no_screenshot = '--log-titles-only' in sys.argv
-no_webcam += '--no-webcam' in sys.argv
+no_webcam += '--use-webcam' not in sys.argv
 dry_run = '--dry-run' in sys.argv
 
 if not no_webcam:

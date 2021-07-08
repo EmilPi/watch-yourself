@@ -18,39 +18,54 @@ COMMON:
 WINDOWS 10:
 * pywin
 
-## CURRENT ISSUES
-1. **No Linux support yet!**
 
 ## TBD
 1. Make reports of your daily PC usage
-2. Make: Makes pruductivity predictions (concentration, sleepiness, bad habits etc.) and recommendations using machine learning on
+2. Make pruductivity predictions (concentration, sleepiness, bad habits etc.) and recommendations using machine learning on
     1. the sequence of your windows and
     2. the webcam photos.
+3. Make windowed/tray icon app with user-friendly interface
 
 ## INSTALLATION:
 
-1. Copy files to a whatever folder (path) you want.
-2. Setup startup of the script:
-    ### On Windows 10:
-    1. Open another Windows Explorer Windows
-    2. Using Windows Explorer, go to C:\\Users\\**YOUR_USER_NAME**\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup
-    3. Right-click empty space in the folder
-    4. Click New -> Shortcut
-    5. Get the **PATH_WERE_YOU_COPIED_THE_FILES**: click to the right of the folders hierarchy in the folder location line at the top of the Windows Explorer window, where you copied your files
-    6. In the text field, type `powershell.exe **PATH_WERE_YOU_COPIED_THE_FILES**\\startup.ps1`
-3. You're done!
+1. cd into this directory
+2. run
+    1. `pip install -r requirements_linux.txt` for Linux
+    2. `pip install -r requirements_windows.txt` for Windows
+    3. `pip install -r requirements_mac.txt` for Mac
+3. Done
 
-### Antivirus configuration
+## USAGE
+### Windows:
+1. Right-click on `blocker.py` file
+2. choose 'Open with...'
+3. Select Python (find it in the programs list or locate python.exe binary)
+4. Choose 'Always use this program to open .py files
+5. Press `Win + R` keyboard shortcut
+6. Type `shell:startup` in the appearing dialog and press `ENTER`
+7. Drag `blocker.py` file onto this folder with right mouse/touchpad button, select `Create shortcut` from appearing menu
+
+Now blocker.py will autostart each time you log in!
+
+#### Antivirus configuration
 * Kaspersky Internet Security (KIS)
     * on the first run of the script, KIS should prompt you to allow webcamera and other accesses. Unless you think differently, you should mark the flag to remember the decision for this application and click "Allow".
     <details><summary>Small details</summary>
     If you change the code of the script of code manually, KIS will re-ask you about script permissions.
     </details>
 
-## USAGE
-First, you can test if the script works. Double click the shortcut you created in the startup folder.
-3. Double-click the created shortcut
 
+### Linux
+Make this script autostart.
+### On Ubuntu 20.04 LTS, Gnome:
+1. Press `Super` key
+2. Start typing 'Startup Applications'
+3. Press `Add`
+4. Put some command name, and type `python <FULL_PATH_TO_REPO_FOLDER>/blocker.py`
+5. Press `Add`
+6. Press `Close`
+
+Now blocker.py will autostart each time you log in!
 
 ## CHANGELOG
 
@@ -59,3 +74,6 @@ First, you can test if the script works. Double click the shortcut you created i
 Added blocker script - only for Linux.
 ### Version 0.2.1:
 Added blocker script for MacOS too.
+
+### 2021-07-08:
+Multiple Windows implementation fixes, updated README.

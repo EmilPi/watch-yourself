@@ -1,2 +1,2 @@
 cd $PSScriptRoot
-python.exe collect.py
+python.exe blocker.py
