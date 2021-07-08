@@ -19,7 +19,7 @@ import sys
 
 no_webcam = no_screenshot = '--log-titles-only' in sys.argv
 no_webcam += '--no-webcam' in sys.argv
-only_warn = '--only-warn' in sys.argv
+dry_run = '--dry-run' in sys.argv
 
 if not no_webcam:
     import cv2
@@ -126,20 +126,20 @@ class MultiLogger(object):
 
 
 class MultiBlocker(object):
-    def __init__(self, only_warn=False):
-        self.only_warn = only_warn
+    def __init__(self, dry_run=False):
+        self.dry_run = dry_run
         settings = json.load(open(SETTINGS_PATH, encoding='utf-8'))
         self.BROWSERS_LIST = settings['BROWSERS_LIST']
         self.BLACKLISTED_PAGES_PARTS = settings['BLACKLISTED_PAGES_PARTS']
 
     def close_tab(self):
-        if self.only_warn:
+        if self.dry_run:
             notify('You should close this tab now!', "Your very fate is in danger!")
         else:
             close_tab()
 
     def close_window(self):
-        if self.only_warn:
+        if self.dry_run:
             notify('You should close this window now!', "Your very fate is in danger!")
         else:
             close_window()
@@ -159,7 +159,7 @@ class MultiBlocker(object):
 
 
 multi_logger = MultiLogger(no_webcam=no_webcam, no_screenshot=no_screenshot)
-multi_blocker = MultiBlocker(only_warn=only_warn)
+multi_blocker = MultiBlocker(dry_run=dry_run)
 browser_violation_count = 0
 print('starting watch cycle')
 while True:
