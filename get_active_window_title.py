@@ -5,7 +5,7 @@
 # Install wnck (sudo apt-get install python-wnck on Ubuntu, see libwnck.)
 
 # For Windows:
-# Make sure win32gui is available
+# Make sure win32gui is available (install pywin32)
 
 # For Mac:
 # Make sure pygetwindow is available
