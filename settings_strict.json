@@ -4,7 +4,8 @@
     "firefox",
     "chromium",
     "chrome",
-    "opera"
+    "opera",
+    "Microsoft Edge"
   ],
   "BLACKLISTED_PAGES_PARTS": [
     "YouTube",
