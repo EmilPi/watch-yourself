@@ -29,6 +29,8 @@ IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
 LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
 SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 
+CAP_FPS_MAX = 2
+
 # Command '['xdotool', 'getwindowpid', '6291465']' returned non-zero exit status 1.
 # Traceback (most recent call last):
 #   File "blocker.py", line 152, in <module>
@@ -49,9 +51,8 @@ class MultiLogger(object):
             self.cap = None
         else:
             self.cap = cv2.VideoCapture(0)
-            # camera warmup, preventing blank images
-            for i in range(30):
-                self.cap.read()
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            self.cap.set(cv2.CAP_PROP_FPS, CAP_FPS_MAX)
         self.logfile = open(LOG_PATH, 'a', encoding='utf-8')
         self.last_idle_time = 0
         self.last_window_title = ''
@@ -93,6 +94,8 @@ class MultiLogger(object):
         if self.cap is None:
             return
         ret, frame = self.cap.read()
+        self.cap.grab()  # free any buffer frame, so next time we get the latest frame
+
         if not ret:
             print("WARNING: webcam didn't return good photo")
             return
