@@ -189,4 +189,7 @@ while True:
 
     multi_logger.log_idle()
 
-    sleep(1)
+    sleep_time = 1
+    # !! this sleep time must not be shorter than
+    # (1. / CAP_FPS_MAX)
+    sleep(sleep_time)
