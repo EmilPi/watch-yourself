@@ -1,0 +1,5 @@
+-r requirements.txt
+pywin32>0.0.0
+# pywin>=0.3.1
+#win32gui==221.6
+win10toast>=0.9

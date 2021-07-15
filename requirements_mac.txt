@@ -1,0 +1,2 @@
+-r requirements.txt
+pygetwindow>=0.0.9

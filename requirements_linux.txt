@@ -1,0 +1,3 @@
+-r requirements.txt
+# requires xdotool
+# check if we need scrot at all
