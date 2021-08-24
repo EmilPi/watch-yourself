@@ -17,12 +17,24 @@ import os
 
 import sys
 
-no_webcam = no_screenshot = '--log-titles-only' in sys.argv
-no_webcam += '--use-webcam' not in sys.argv
+# defaults
+no_screenshot = False
+use_webcam = False
+use_dslrcam = False
+if '--log-titles-only' in sys.argv:
+    no_screenshot = True
+else:
+    if '--use-webcam' in sys.argv:
+        use_webcam = True
+    elif '--use-dslr-cam' in sys.argv:
+        use_dslrcam = True
+
 dry_run = '--dry-run' in sys.argv
 
-if not no_webcam:
+if use_webcam:
     import cv2
+if use_dslrcam:
+    import gphoto2 as gp
 
 SCRIPT_PATH = '.'
 IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
@@ -41,18 +53,28 @@ CAP_FPS_MAX = 2
 # TODO - add time limits on apps/sites instead of blacklisting and instant closing
 # TODO - close apps/sites only after time spent in them exceeds limits
 
+
 class MultiLogger(object):
     MIN_IDLE_LOGGING_INTERVAL = 10
 
-    def __init__(self, no_webcam=False, no_screenshot=False):
-        self.no_webcam = no_webcam
+    def __init__(self,
+                 use_webcam=False,
+                 use_dslrcam=False,
+                 no_screenshot=False,
+                 ):
+        self.use_webcam = use_webcam
+        self.use_dslrcam = use_dslrcam
         self.no_screenshot = no_screenshot
-        if self.no_webcam:
+        if not self.use_webcam:
             self.cap = None
         else:
             self.cap = cv2.VideoCapture(0)
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             self.cap.set(cv2.CAP_PROP_FPS, CAP_FPS_MAX)
+        if not self.use_dslrcam:
+            self.dslr = None
+        else:
+            self.dslr = True
         self.logfile = open(LOG_PATH, 'a', encoding='utf-8')
         self.last_idle_time = 0
         self.last_window_title = ''
@@ -104,6 +126,26 @@ class MultiLogger(object):
             os.sep,
             self._datetime_str()), frame)
 
+    # based on https://github.com/jim-easterbrook/python-gphoto2/blob/master/examples/capture-image.py
+    def make_dslrcam_photo(self):
+        # keeping the reference to camera in self.dslr leads to strange I/O errors:
+        # better to reclaim it each time
+        if not self.dslr:
+            return
+        err, dslr = gp.gp_camera_new()
+        gp.gp_camera_init(dslr)
+        file_path = dslr.capture(gp.GP_CAPTURE_IMAGE)
+        camera_file = dslr.file_get(
+            file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
+        CAMERA_EXT = 'jpg'  # TODO fix hardcoded ext for my dslr camera
+        camera_file.save('%s%sdslrcam__%s.%s' % (
+            IMG_PATH,
+            os.sep,
+            self._datetime_str(),
+            CAMERA_EXT
+        ))
+        dslr.exit()
+
     def log_idle(self):
         idle_time = get_idle_time()
         if idle_time > 2 * self.last_idle_time \
@@ -116,6 +158,7 @@ class MultiLogger(object):
     def log_pictures(self):
         self.make_screenshot()
         self.make_webcam_photo()
+        self.make_dslrcam_photo()
 
     def log_all(self, entry_text):
         self.log_entry(entry_text)
@@ -164,7 +207,9 @@ class MultiBlocker(object):
         notify("You are wasting time that is given to you!", "Your very fate is in danger!")
 
 
-multi_logger = MultiLogger(no_webcam=no_webcam, no_screenshot=no_screenshot)
+multi_logger = MultiLogger(use_webcam=use_webcam,
+                           use_dslrcam=use_dslrcam,
+                           no_screenshot=no_screenshot)
 multi_blocker = MultiBlocker(dry_run=dry_run)
 browser_violation_count = 0
 print('starting watch cycle')
