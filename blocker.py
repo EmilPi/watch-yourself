@@ -21,7 +21,8 @@ import sys
 no_screenshot = False
 use_webcam = False
 use_dslrcam = False
-if '--log-titles-only' in sys.argv:
+if ('--log-titles-only' in sys.argv) \
+  or ('--no-screenshot' in sys.argv):
     no_screenshot = True
 else:
     if '--use-webcam' in sys.argv:
