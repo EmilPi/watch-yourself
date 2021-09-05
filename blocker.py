@@ -106,10 +106,14 @@ class MultiLogger(object):
             IMG_PATH,
             os.sep,
             self._datetime_str())
-        if IS_LINUX:
-            screenshot = pygui.screenshot(img_path)
-        else:
-            screenshot = ImageGrab.grab(all_screens=True)
+        try:
+            if IS_LINUX:
+                screenshot = pygui.screenshot(img_path)
+            else:
+                screenshot = ImageGrab.grab(all_screens=True)
+        except Exception as e:
+            print('failed to make screenshot with error', e)
+            return
         screenshot.save(img_path)
 
     def make_webcam_photo(self):
@@ -156,6 +160,7 @@ class MultiLogger(object):
             self.last_idle_time = idle_time
 
     def log_pictures(self):
+        # TODO - make this non-blocking maybe?
         self.make_screenshot()
         self.make_webcam_photo()
         self.make_dslrcam_photo()
@@ -214,6 +219,7 @@ multi_blocker = MultiBlocker(dry_run=dry_run)
 browser_violation_count = 0
 print('starting watch cycle')
 while True:
+    # TODO - wrap into try/catch, log errors to separate log file
     try:
         window_title = get_active_window()
     except Exception as e:
