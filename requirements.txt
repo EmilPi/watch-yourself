@@ -1,5 +1,5 @@
 PyAutoGUI==0.9.52
 opencv_python>=4.5.1.48
 # TODO - update project license to GPL too
-gphoto2>=2.2.4
+# gphoto2>=2.2.4 - test on Windows & Mac before enabling
 idle_time==0.1.0

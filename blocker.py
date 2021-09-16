@@ -29,12 +29,15 @@ else:
         use_webcam = True
     elif '--use-dslr-cam' in sys.argv:
         use_dslrcam = True
+        if not IS_LINUX:
+            print('Not tested on other OS but linux - use at your own risk!')
 
 dry_run = '--dry-run' in sys.argv
 
 if use_webcam:
     import cv2
 if use_dslrcam:
+    # need to install libgphoto separately - not tested on Windows
     import gphoto2 as gp
 
 SCRIPT_PATH = '.'
