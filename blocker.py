@@ -8,10 +8,7 @@ from cross_platform import notify
 from get_active_window_title import get_active_window
 from get_idle_time import get_idle_time
 from cross_platform import IS_LINUX
-if IS_LINUX:
-    import pyautogui as pygui
-else:
-    from PIL import ImageGrab
+from PIL import ImageGrab
 
 import os
 
@@ -111,10 +108,7 @@ class MultiLogger(object):
             os.sep,
             self._datetime_str())
         try:
-            if IS_LINUX:
-                screenshot = pygui.screenshot(img_path)
-            else:
-                screenshot = ImageGrab.grab(all_screens=True)
+            screenshot = ImageGrab.grab(all_screens=True)
         except Exception as e:
             print('failed to make screenshot with error', e)
             return
