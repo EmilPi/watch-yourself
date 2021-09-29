@@ -18,18 +18,31 @@ import sys
 no_screenshot = False
 use_webcam = False
 use_dslrcam = False
+use_v4l2_backend = False
+if os.path.exists('profile.json'):
+    profile_options = json.load(open('profile.json'))
+    no_screenshot = profile_options.get('no_screenshot', no_screenshot)
+    use_webcam = profile_options.get('use_webcam', use_webcam)
+    use_dslrcam = profile_options.get('use_dslrcam', use_dslrcam)
+    use_v4l2_backend = profile_options.get('use_v4l2_backend', use_v4l2_backend)
 if ('--log-titles-only' in sys.argv) \
   or ('--no-screenshot' in sys.argv):
     no_screenshot = True
 else:
     if '--use-webcam' in sys.argv:
         use_webcam = True
+        if '--use-v4l2-backend' in sys.argv:
+            use_v4l2_backend = True
     elif '--use-dslr-cam' in sys.argv:
         use_dslrcam = True
         if not IS_LINUX:
             print('Not tested on other OS but linux - use at your own risk!')
 
 dry_run = '--dry-run' in sys.argv
+if use_v4l2_backend:
+    print('Using V4L2 camera backend.')
+if dry_run:
+    print('Dry run: no actions will be performed.')
 
 if use_webcam:
     import cv2
@@ -62,6 +75,7 @@ class MultiLogger(object):
                  use_webcam=False,
                  use_dslrcam=False,
                  no_screenshot=False,
+                 use_v4l2_backend=False,
                  ):
         self.use_webcam = use_webcam
         self.use_dslrcam = use_dslrcam
@@ -69,7 +83,10 @@ class MultiLogger(object):
         if not self.use_webcam:
             self.cap = None
         else:
-            self.cap = cv2.VideoCapture(0)
+            if use_v4l2_backend:
+                self.cap = cv2.VideoCapture(cv2.CAP_V4L2)
+            else:
+                self.cap = cv2.VideoCapture(0)
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
             self.cap.set(cv2.CAP_PROP_FPS, CAP_FPS_MAX)
         if not self.use_dslrcam:
@@ -212,7 +229,9 @@ class MultiBlocker(object):
 
 multi_logger = MultiLogger(use_webcam=use_webcam,
                            use_dslrcam=use_dslrcam,
-                           no_screenshot=no_screenshot)
+                           no_screenshot=no_screenshot,
+                           use_v4l2_backend=use_v4l2_backend,
+                           )
 multi_blocker = MultiBlocker(dry_run=dry_run)
 browser_violation_count = 0
 print('starting watch cycle')

@@ -2,6 +2,7 @@
 # Project storage files
 windows.txt
 archive
+profile.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
