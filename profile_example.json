@@ -1,0 +1,6 @@
+{
+  "no_screenshot": false,
+  "use_webcam": false,
+  "use_dslrcam": false,
+  "use_v4l2_backend": false
+}

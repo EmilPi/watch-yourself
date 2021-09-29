@@ -58,14 +58,20 @@ Now blocker.py will autostart each time you log in!
 ### Linux
 Make this script autostart.
 ### On Ubuntu 20.04 LTS, Gnome:
+0. Make the script executable: `chmod +x blocker.py`
 1. Press `Super` key
 2. Start typing 'Startup Applications'
 3. Press `Add`
-4. Put some command name, and type `python <FULL_PATH_TO_REPO_FOLDER>/blocker.py`
+4. Put some command title, and type `gnome-terminal --working-directory=<FULL_PATH_TO_REPO_FOLDER> ./blocker.py` into `command` field.
 5. Press `Add`
 6. Press `Close`
 
 Now blocker.py will autostart each time you log in!
+
+### Settings
+You can provide command-line parameters when running `blocker.py` or use `profile.json` file.
+Copy `profile_example.json` as `profile.json` and set parameters according to your needs (their names speak for themselves). By default, active window title and screenhost are saved when you close a window.
+If your webcamera does not return good photo, try setting `use_v4l2_backend` to `true`.
 
 ## CHANGELOG
 
