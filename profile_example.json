@@ -1,6 +1,8 @@
 {
   "no_screenshot": false,
   "use_webcam": false,
+  "webcam_url": null,
   "use_dslrcam": false,
-  "use_v4l2_backend": false
+  "use_v4l2_backend": false,
+  "use_droidcam": false
 }

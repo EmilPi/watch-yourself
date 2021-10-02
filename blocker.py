@@ -2,6 +2,8 @@
 from time import sleep, strftime
 import json
 
+import requests
+
 from utils import close_tab, close_window
 from cross_platform import notify
 
@@ -12,33 +14,54 @@ from PIL import ImageGrab
 
 import os
 
-import sys
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--use-webcam', action='store_true',
+                    help='If you want to make webcam photos of yourself while doing actions')
+parser.add_argument('--use-dslrcam', action='store_true',
+                    help='If you want to make DSLR camera photos of yourself while doing actions')
+parser.add_argument('--webcam-url', required=False,
+                    help='If using phone or other remote webcam, provide its video stream URL')
+parser.add_argument('--use-v4l2-backend', action='store_true',
+                    help='If using phone or other remote webcam, provide its video stream URL')
+parser.add_argument('--use-droidcam', action='store_true',
+                    help='If using DroidCam app on Android phone. Webcam URL should be opened in browser too in order for capture functionality to work! Will require --webcam-url anyway.')
+parser.add_argument('--no-screenshot', action='store_true',
+                    help='Do not make screenshots while doing actions')
+parser.add_argument('--log-titles-only', action='store_true',
+                    help='Do not make screenshots or use cameras while doing actions')
+parser.add_argument('--dry-run', action='store_true',
+                    help="Log but don't interact with user.")
 
-# defaults
-no_screenshot = False
-use_webcam = False
-use_dslrcam = False
-use_v4l2_backend = False
+args = parser.parse_args()
+use_webcam = args.use_webcam
+use_dslrcam = args.use_dslrcam
+use_droidcam = args.use_droidcam
+webcam_url = args.webcam_url
+use_v4l2_backend = args.use_v4l2_backend
+no_screenshot = args.no_screenshot
+log_titles_only = args.log_titles_only
+dry_run = args.dry_run
+
 if os.path.exists('profile.json'):
     profile_options = json.load(open('profile.json'))
     no_screenshot = profile_options.get('no_screenshot', no_screenshot)
     use_webcam = profile_options.get('use_webcam', use_webcam)
     use_dslrcam = profile_options.get('use_dslrcam', use_dslrcam)
+    use_droidcam = profile_options.get('use_droidcam', use_droidcam)
+    webcam_url = profile_options.get('webcam_url', webcam_url)
     use_v4l2_backend = profile_options.get('use_v4l2_backend', use_v4l2_backend)
-if ('--log-titles-only' in sys.argv) \
-  or ('--no-screenshot' in sys.argv):
+if log_titles_only:
     no_screenshot = True
-else:
-    if '--use-webcam' in sys.argv:
-        use_webcam = True
-        if '--use-v4l2-backend' in sys.argv:
-            use_v4l2_backend = True
-    elif '--use-dslr-cam' in sys.argv:
-        use_dslrcam = True
-        if not IS_LINUX:
-            print('Not tested on other OS but linux - use at your own risk!')
+    use_webcam = False
+    use_dslrcam = False
+    use_droidcam = False
+    webcam_url = ''
+if use_dslrcam and not IS_LINUX:
+    print('Not tested on other OS but linux - use at your own risk!')
 
-dry_run = '--dry-run' in sys.argv
+if use_droidcam:
+    print(f"make sure to open {webcam_url} in browser - otherwise DroidCam won't let you to capture images!")
 if use_v4l2_backend:
     print('Using V4L2 camera backend.')
 if dry_run:
@@ -71,23 +94,26 @@ CAP_FPS_MAX = 2
 class MultiLogger(object):
     MIN_IDLE_LOGGING_INTERVAL = 10
 
-    def __init__(self,
-                 use_webcam=False,
-                 use_dslrcam=False,
-                 no_screenshot=False,
+    def __init__(self, use_webcam=False, use_dslrcam=False, use_droidcam=False,
+                 webcam_url='',
                  use_v4l2_backend=False,
+                 no_screenshot=False,
                  ):
         self.use_webcam = use_webcam
         self.use_dslrcam = use_dslrcam
         self.no_screenshot = no_screenshot
+        self.webcam_url = webcam_url
+        self.use_droidcam = use_droidcam
         if not self.use_webcam:
             self.cap = None
         else:
             if use_v4l2_backend:
                 self.cap = cv2.VideoCapture(cv2.CAP_V4L2)
+            elif webcam_url and not use_droidcam:
+                self.cap = cv2.VideoCapture(webcam_url)
             else:
                 self.cap = cv2.VideoCapture(0)
-            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # TODO test again with 0 on notebook webcam, ext. webcam
             self.cap.set(cv2.CAP_PROP_FPS, CAP_FPS_MAX)
         if not self.use_dslrcam:
             self.dslr = None
@@ -116,6 +142,19 @@ class MultiLogger(object):
         ))
         self.logfile.flush()
 
+    @staticmethod
+    def get_img_save_fpath(
+            prefix='screenshot',
+            EXT='png'
+    ):
+        return '%s%s%s__%s.%s' % (
+            IMG_PATH,
+            os.sep,
+            prefix,
+            MultiLogger._datetime_str(),
+            EXT
+        )
+
     def make_screenshot(self):
         if self.no_screenshot:
             return
@@ -124,6 +163,7 @@ class MultiLogger(object):
             IMG_PATH,
             os.sep,
             self._datetime_str())
+        img_path = MultiLogger.get_img_save_fpath(prefix='screen', EXT='png')
         try:
             screenshot = ImageGrab.grab(all_screens=True)
         except Exception as e:
@@ -132,18 +172,25 @@ class MultiLogger(object):
         screenshot.save(img_path)
 
     def make_webcam_photo(self):
-        if self.cap is None:
+        EXT = 'png'
+        if self.use_droidcam:
+            EXT = 'jpg'
+        if self.cap is None and not self.use_droidcam:
             return
+
+        save_fname = MultiLogger.get_img_save_fpath(prefix='webcam', EXT=EXT)
+        if self.use_droidcam:
+            r = requests.get(f'{self.webcam_url}/cam/1/frame.jpg')
+            open(save_fname, 'wb').write(r.content)
+            return
+
         ret, frame = self.cap.read()
         self.cap.grab()  # free any buffer frame, so next time we get the latest frame
 
         if not ret:
             print("WARNING: webcam didn't return good photo")
             return
-        cv2.imwrite('%s%swebcam__%s.png' % (
-            IMG_PATH,
-            os.sep,
-            self._datetime_str()), frame)
+        cv2.imwrite(save_fname, frame)
 
     # based on https://github.com/jim-easterbrook/python-gphoto2/blob/master/examples/capture-image.py
     def make_dslrcam_photo(self):
@@ -157,12 +204,7 @@ class MultiLogger(object):
         camera_file = dslr.file_get(
             file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL)
         CAMERA_EXT = 'jpg'  # TODO fix hardcoded ext for my dslr camera
-        camera_file.save('%s%sdslrcam__%s.%s' % (
-            IMG_PATH,
-            os.sep,
-            self._datetime_str(),
-            CAMERA_EXT
-        ))
+        camera_file.save(MultiLogger.get_img_save_fpath(prefix='dslrcam', EXT=CAMERA_EXT))
         dslr.exit()
 
     def log_idle(self):
@@ -229,8 +271,10 @@ class MultiBlocker(object):
 
 multi_logger = MultiLogger(use_webcam=use_webcam,
                            use_dslrcam=use_dslrcam,
+                           use_droidcam=use_droidcam,
                            no_screenshot=no_screenshot,
                            use_v4l2_backend=use_v4l2_backend,
+                           webcam_url=webcam_url
                            )
 multi_blocker = MultiBlocker(dry_run=dry_run)
 browser_violation_count = 0
