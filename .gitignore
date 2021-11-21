@@ -3,6 +3,7 @@
 windows.txt
 archive
 profile.json
+health/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
