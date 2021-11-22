@@ -17,40 +17,68 @@ import os
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--use-webcam', action='store_true',
-                    help='If you want to make webcam photos of yourself while doing actions')
+                    help="If you want to make webcam photos of yourself while doing actions")
+parser.add_argument('--no-webcam', action='store_true',
+                    help="If you don\'t want to make webcam photos of yourself while doing actions")
 parser.add_argument('--use-dslrcam', action='store_true',
-                    help='If you want to make DSLR camera photos of yourself while doing actions')
-parser.add_argument('--webcam-url', required=False,
-                    help='If using phone or other remote webcam, provide its video stream URL')
-parser.add_argument('--use-v4l2-backend', action='store_true',
-                    help='If using phone or other remote webcam, provide its video stream URL')
+                    help="If you want to make DSLR camera photos of yourself while doing actions")
+parser.add_argument('--no-dslrcam', action='store_true',
+                    help="If you don\'t want to make DSLR camera photos of yourself while doing actions")
 parser.add_argument('--use-droidcam', action='store_true',
-                    help='If using DroidCam app on Android phone. Webcam URL should be opened in browser too in order for capture functionality to work! Will require --webcam-url anyway.')
+                    help="If using DroidCam app on Android phone. Webcam URL should be opened in browser too in order for capture functionality to work! Will require --webcam-url anyway.")
+parser.add_argument('--no-droidcam', action='store_true',
+                    help="If not using DroidCam app on Android phone. Webcam URL should be opened in browser too in order for capture functionality to work! Will require --webcam-url anyway.")
+parser.add_argument('--use-v4l2-backend', action='store_true',
+                    help="If using webcam/cam requiring to use V4L2 backend.")
+parser.add_argument('--no-v4l2-backend', action='store_true',
+                    help="If not using webcam/cam requiring to use V4L2 backend.")
+parser.add_argument('--use-screenshot', action='store_true',
+                    help="Make screenshots while doing actions")
 parser.add_argument('--no-screenshot', action='store_true',
-                    help='Do not make screenshots while doing actions')
+                    help="Don\'t make screenshots while doing actions")
+
+parser.add_argument('--webcam-url', required=False,
+                    help="If using phone or other remote webcam, provide its video stream URL")
 parser.add_argument('--log-titles-only', action='store_true',
-                    help='Do not make screenshots or use cameras while doing actions')
+                    help="Do not make screenshots or use cameras while doing actions")
 parser.add_argument('--dry-run', action='store_true',
                     help="Log but don't interact with user.")
 
-args = parser.parse_args()
-use_webcam = args.use_webcam
-use_dslrcam = args.use_dslrcam
-use_droidcam = args.use_droidcam
-webcam_url = args.webcam_url
-use_v4l2_backend = args.use_v4l2_backend
-no_screenshot = args.no_screenshot
-log_titles_only = args.log_titles_only
-dry_run = args.dry_run
+
+profile_options = json.load(open('profile_default.json'))
+use_webcam = profile_options.get('use_webcam', False)
+use_dslrcam = profile_options.get('use_dslrcam', False)
+use_droidcam = profile_options.get('use_droidcam', False)
+use_v4l2_backend = profile_options.get('use_v4l2_backend', False)
+no_screenshot = profile_options.get('no_screenshot', False)
+webcam_url = profile_options.get('webcam_url', '')
 
 if os.path.exists('profile.json'):
     profile_options = json.load(open('profile.json'))
-    no_screenshot = profile_options.get('no_screenshot', no_screenshot)
     use_webcam = profile_options.get('use_webcam', use_webcam)
     use_dslrcam = profile_options.get('use_dslrcam', use_dslrcam)
     use_droidcam = profile_options.get('use_droidcam', use_droidcam)
-    webcam_url = profile_options.get('webcam_url', webcam_url)
     use_v4l2_backend = profile_options.get('use_v4l2_backend', use_v4l2_backend)
+    no_screenshot = profile_options.get('no_screenshot', no_screenshot)
+    webcam_url = profile_options.get('webcam_url', webcam_url)
+
+args = parser.parse_args()
+if args.use_webcam: use_webcam = True
+if args.no_webcam: use_webcam = False
+if args.use_dslrcam: use_dslrcam = True
+if args.no_dslrcam: use_dslrcam = False
+if args.use_droidcam: use_droidcam = True
+if args.no_droidcam: use_droidcam = False
+# Attention - this is reverse variable
+if args.no_screenshot: no_screenshot = True
+if args.use_screenshot: no_screenshot = False
+if args.use_v4l2_backend: use_v4l2_backend = True
+if args.no_v4l2_backend: use_v4l2_backend = False
+no_screenshot = args.no_screenshot
+webcam_url = args.webcam_url
+log_titles_only = args.log_titles_only
+dry_run = args.dry_run
+
 if log_titles_only:
     no_screenshot = True
     use_webcam = False
@@ -62,7 +90,7 @@ if use_dslrcam and not IS_LINUX:
 
 if use_droidcam:
     print(f"make sure to open {webcam_url} in browser - otherwise DroidCam won't let you to capture images!")
-if use_v4l2_backend:
+if use_v4l2_backend and use_webcam:
     print('Using V4L2 camera backend.')
 if dry_run:
     print('Dry run: no actions will be performed.')
