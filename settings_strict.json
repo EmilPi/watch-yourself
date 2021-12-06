@@ -1,8 +1,10 @@
 {
   "BROWSERS_LIST": [
     "Safari",
+    "GeckoMain",
     "firefox",
     "chromium",
+    "chromium-browser",
     "chrome",
     "opera",
     "Microsoft Edge"
