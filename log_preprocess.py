@@ -46,6 +46,13 @@ def get_activity_times_summary(activity_times):
     return activity_times
 
 
+def preprocess_text(fpath, fpath_out):
+    text = open(fpath, encoding='utf-8').read()
+    text_clean = clean_chars(text)
+    lines = text_clean.splitlines()
+    preprocessed_lines = preprocess_full(lines)
+    text_preprocessed = '\n'.join(preprocessed_lines)
+    open(fpath_out, 'w', encoding='utf-8').write(text_preprocessed)
 
 
 # TODO - check lines starting with idle times (on Windows) and join IF THEY ARE THE SAME WINDOW
@@ -153,7 +160,7 @@ def get_fpath_with_postfix(fpath, postfix):
 # ATTENTION! USE WITH IN EVALUATION TOO!
 # Can we use Byte-Pair-Encoding here?
 def clean_chars(text):
-    return text.replace(' ', ' ')
+    return text.replace(' ', ' ').replace('\u2028', ' ')
 
 
 def split(all_log_files_fpaths, _tokenize=False):
