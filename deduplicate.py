@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from shutil import copy2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--search-path", default='./',
@@ -29,6 +30,9 @@ def deduplicate(fpaths, dry_run=True):
                 continue
 
             fpath1, fpath2 = fpaths[idx], fpaths[idx_other]
+            copy2(fpath1, fpath1 + '.bak')
+            copy2(fpath2, fpath2 + '.bak')
+            print(f'backed up {fpath1} and {fpath2}')
             while True:
                 choice = input(f'Choose file to clean up:\n1: {fpath1},\n2: {fpath2}\n? _ ')
                 if choice in ['1', '2']:
