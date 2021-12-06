@@ -4,3 +4,5 @@
 gphoto2>=2.2.4
 pyautogui>=0.9.52
 Pillow>=8.3.2
+
+#TODO - fix xdotool linux requirement!!!
