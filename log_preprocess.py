@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 from pathlib import Path
 from utils_tokenization import tokenize
 
@@ -19,7 +20,24 @@ def fix_datetime_format(datetime_str):
 
 
 def join_idle_times(activity_times):
-    # TODO
+    if activity_times == ['']: return activity_times
+    try:
+        activity_times_np = np.array([float(at) for at in activity_times])
+        # idle time is logged if idle time > 2 times last idle time, e.g. at 1, 2.01, 4.03 etc seconds
+        # sleep time is 1, so 0.1, 0.3 is not continuation
+        # idle time logged is continuation if the number increase at least twice and more than by a second
+        next_idle_time_is_continuation_of_this_idle_time = (
+            np.diff(activity_times_np) > 1.001  # let's say .001 is time of logging, although it is not true
+        ) * (
+            np.diff(activity_times_np) > activity_times_np[:-1]
+        )
+
+        activity_times_np[:-1][next_idle_time_is_continuation_of_this_idle_time] = np.nan
+        activity_times_np = activity_times_np[np.logical_not(np.isnan(activity_times_np))]
+        activity_times = ["%.3f" % at for at in activity_times_np]
+    except Exception as e:
+        print(e)
+
     return activity_times
 
 
