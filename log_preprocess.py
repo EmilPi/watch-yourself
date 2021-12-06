@@ -13,7 +13,8 @@ parser.add_argument("--tokenize-special", action="store_true",
 
 
 def fix_datetime_format(datetime_str):
-    # TODO
+    if ':' in datetime_str:
+        return datetime_str.replace(':', '_').replace(' ', '__')
     return datetime_str
 
 
