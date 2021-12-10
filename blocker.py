@@ -14,6 +14,8 @@ from PIL import ImageGrab
 
 import os
 
+from vars import ENTRY_DATETIME_FORMAT
+
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--use-webcam', action='store_true',
@@ -161,7 +163,7 @@ class MultiLogger(object):
 
     @staticmethod
     def _datetime_str():
-        return strftime('%y_%m_%d__%H_%M_%S')
+        return strftime(ENTRY_DATETIME_FORMAT)
 
     def log_entry(self, entry_text):
         self.logfile.write('\n%s : %s' % (
