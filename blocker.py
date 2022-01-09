@@ -46,8 +46,10 @@ parser.add_argument('--log-titles-only', action='store_true',
 parser.add_argument('--dry-run', action='store_true',
                     help="Log but don't interact with user.")
 
-
-profile_options = json.load(open('profile_default.json'))
+try:
+    profile_options = json.load(open('profile.json'))
+except FileNotFoundException as e:
+    profile_options = json.load(open('profile_default.json'))
 use_webcam = profile_options.get('use_webcam', False)
 use_dslrcam = profile_options.get('use_dslrcam', False)
 use_droidcam = profile_options.get('use_droidcam', False)
