@@ -12,6 +12,7 @@ SPECIAL_TOKENS = {
     '-': '<dsh>',
     '_': '<und>',
     '/': '<slsh>',
+    '|': '<vslsh>',
     '\\': '<bslsh>',
     '.': '<dot>',
     ',': '<cm>',
