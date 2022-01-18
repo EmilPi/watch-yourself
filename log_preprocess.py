@@ -5,7 +5,7 @@ import numpy as np
 
 from features_text import get_window_titles, get_binary_names, \
     get_idle_sequences, get_times_spent_in_window_idle_seq_estimate, \
-    get_watch_yourself_or_pc_off, get_times_spent_in_window_change_detect_estimate, get_seq_of_seq
+    get_watch_yourself_or_pc_off, get_times_spent_in_window_change_detect_estimate, get_seq_of_seq, get_tokenized_text
 from vars import ENTRY_DATETIME_FORMAT
 
 parser = argparse.ArgumentParser()
@@ -151,9 +151,13 @@ def clean_chars(text):
     return text.replace(' ', ' ').replace('\u2028', ' ')
 
 
-FEATURES = {
+FEATURES_ALL = {
     'binary_names': (get_binary_names, (), {}),
     'window_titles': (get_window_titles, (), {}),
+    'window_titles_tokenized': (
+        (get_window_titles, (), {}),
+        (get_tokenized_text, (), {})
+    ),
     'idle_sequences': (get_idle_sequences, (), {}),
     'times_spent_in_window_change_detect_estimate': (get_times_spent_in_window_change_detect_estimate, (), {}),
     'times_spent_in_window_idle_seq_estimate': (get_times_spent_in_window_idle_seq_estimate, (), {}),

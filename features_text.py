@@ -1,6 +1,7 @@
 import time
 
 from time_utils import get_moon_phase_part, time_str2seconds_since_epoch
+from utils_tokenization import tokenize
 from vars import ENTRY_DATETIME_FORMAT
 
 
@@ -278,3 +279,11 @@ def get_seq_of_seq(lines, fpath=None, **kwargs):
             [join_seq_to_dump_str(seq) for seq in seq_of_seq]
         ))
     return seq_of_seq
+
+
+def get_tokenized_text(lines, fpath=None, **kwargs):
+    tokenized_lines = tokenize(lines)
+    if fpath:
+        open(fpath, 'w', encoding='utf-8').write('\n'.join(
+            [line for line in tokenized_lines]
+        ))
