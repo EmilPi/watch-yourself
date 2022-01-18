@@ -183,6 +183,10 @@ FEATURES_ALL = {
         (get_seq_of_seq, (), {'length': 6, 'include_last': True})
     ),
 }
+FEATURES_NAMES_TO_GET = [
+    'window_titles_tokenized'
+]
+FEATURES = {k: FEATURES_ALL[k] for k in FEATURES_NAMES_TO_GET}
 
 
 def read_lines(fpath):
