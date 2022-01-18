@@ -191,10 +191,6 @@ class MultiLogger(object):
         if self.no_screenshot:
             return
         # NotImplementedError: "scrot" must be installed to use screenshot functions in Linux. Run: sudo apt-get install scrot
-        img_path = '%s%sscreen__%s.png' % (
-            IMG_PATH,
-            os.sep,
-            self._datetime_str())
         img_path = MultiLogger.get_img_save_fpath(prefix='screen', EXT='png')
         try:
             screenshot = ImageGrab.grab(all_screens=True)
