@@ -5,7 +5,10 @@ import numpy as np
 
 from features_text import get_window_titles, get_binary_names, \
     get_idle_sequences, get_times_spent_in_window_idle_seq_estimate, \
-    get_watch_yourself_or_pc_off, get_times_spent_in_window_change_detect_estimate, get_seq_of_seq, get_tokenized_text
+    get_watch_yourself_or_pc_off, \
+    get_times_spent_in_window_change_detect_estimate, \
+    get_seq_of_seq, get_tokenized_text, \
+    get_delim, join_seq_to_dump_str
 from vars import ENTRY_DATETIME_FORMAT
 
 parser = argparse.ArgumentParser()
@@ -202,9 +205,22 @@ def read_and_split_lines(fpath):
     lines = read_lines(fpath)
     return split_lines(lines)
 
+def get_range_rel2len(array, range):
+    return array[int(range[0] * len(array)):int(range[1] * len(array))]
+
+SET_SPLITS = [
+    ('train', [0, 0.9],),
+    ('valid', [0.9, 0.99],),
+    ('test', [0.99, 1.],),
+]
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    all_lines_partitioned = dict.fromkeys(FEATURES.keys())
+    for feature_name in FEATURES:
+        all_lines_partitioned[feature_name] = {}
+        for dataset_part_name, _ in SET_SPLITS:
+            all_lines_partitioned[feature_name][dataset_part_name] = []
 
     all_log_files_fpaths = [str(_) for _ in list(Path(args.search_path).rglob('log_all.txt'))]
     for fpath in all_log_files_fpaths:
@@ -222,3 +238,29 @@ if __name__ == '__main__':
                     feature_kwargs['fpath'] = get_fpath_with_postfix(fpath_preprocessed, '_' + feature_name)
                 output_data = feature_fun(output_data, **feature_kwargs)
             feature_lines = output_data
+            for dataset_part_name, part_range in SET_SPLITS:
+                all_lines_partitioned[feature_name][dataset_part_name].extend(
+                    get_range_rel2len(feature_lines, part_range)
+                )
+
+    for feature_name, feature_fun_chain in FEATURES.items():
+        if not isinstance(feature_fun_chain[0], tuple):
+            feature_fun_chain = (feature_fun_chain,)
+        seq_of_seq = feature_fun_chain[-1][0] == get_seq_of_seq
+
+        if isinstance(all_lines_partitioned[feature_name]['train'][0], (list, tuple)):
+            sample_dump_fun = join_seq_to_dump_str
+            delim = get_delim(feature_fun_chain[-1][-1]['length'])
+        elif isinstance(all_lines_partitioned[feature_name]['train'][0], (int, float)):
+            sample_dump_fun = str
+            delim = '\n'
+        else:
+            sample_dump_fun = lambda x: x
+            delim = '\n'
+        for dataset_part_name, _ in SET_SPLITS:
+            dump_fpath = f'log_all_merged_{feature_name}_{dataset_part_name}.txt'
+            open(dump_fpath, 'w', encoding='utf-8').write(delim.join(
+                [sample_dump_fun(sample) for
+                 sample in
+                 all_lines_partitioned[feature_name][dataset_part_name]]
+            ))
