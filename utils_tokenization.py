@@ -24,6 +24,7 @@ SPECIAL_TOKENS = {
     ';': '<scl>',
     ':': '<cl>',
     '*': '<star>',
+    '%': '<prct>',
 }
 AFTER_TOKENS = ('  ', ' <sp> ')
 UNSPECIAL_TOKENS = {v: k for k, v in SPECIAL_TOKENS.items()}
