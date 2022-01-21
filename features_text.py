@@ -287,3 +287,4 @@ def get_tokenized_text(lines, fpath=None, **kwargs):
         open(fpath, 'w', encoding='utf-8').write('\n'.join(
             [line for line in tokenized_lines]
         ))
+    return tokenized_lines
