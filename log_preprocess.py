@@ -9,7 +9,8 @@ from features_text import get_window_titles, get_binary_names, \
     get_times_spent_in_window_change_detect_estimate, \
     get_seq_of_seq, get_tokenized_text, \
     get_delim, join_seq_to_dump_str
-from vars import ENTRY_DATETIME_FORMAT
+from vars import ENTRY_DATETIME_FORMAT, DEFAULT_TRAIN_SPLIT
+
 
 FEATURES_ALL = {
     'binary_names': (get_binary_names, (), {}),
@@ -45,7 +46,7 @@ FEATURES_ALL = {
 }
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--train-split", default=.9,
+parser.add_argument("--train-split", default=DEFAULT_TRAIN_SPLIT,
                     type=float,
                     help="directory to save checkpoints and outputs")
 parser.add_argument("--search-path", default='./',
@@ -205,13 +206,21 @@ SET_SPLITS = [
     ('test', [0.99, 1.],),
 ]
 
+def get_set_splits(train_split):
+    valid_split = (1. - train_split) * train_split
+    return [
+        ('train', [0, train_split]),
+        ('valid', [train_split, train_split + valid_split]),
+        ('test', [train_split + valid_split, 1.]),
+    ]
 
-def dump_features(features_to_get, search_path):
+
+def dump_features(features_to_get, search_path, set_splits):
     FEATURES = {k: FEATURES_ALL[k] for k in features_to_get}
     all_lines_partitioned = dict.fromkeys(FEATURES.keys())
     for feature_name in FEATURES:
         all_lines_partitioned[feature_name] = {}
-        for dataset_part_name, _ in SET_SPLITS:
+        for dataset_part_name, _ in set_splits:
             all_lines_partitioned[feature_name][dataset_part_name] = []
     all_log_files_fpaths = [str(_) for _ in list(Path(search_path).rglob('log_all.txt'))]
     for fpath in all_log_files_fpaths:
@@ -229,7 +238,7 @@ def dump_features(features_to_get, search_path):
                     feature_kwargs['fpath'] = get_fpath_with_postfix(fpath_preprocessed, '_' + feature_name)
                 output_data = feature_fun(output_data, **feature_kwargs)
             feature_lines = output_data
-            for dataset_part_name, part_range in SET_SPLITS:
+            for dataset_part_name, part_range in set_splits:
                 all_lines_partitioned[feature_name][dataset_part_name].extend(
                     get_range_rel2len(feature_lines, part_range)
                 )
@@ -246,7 +255,7 @@ def dump_features(features_to_get, search_path):
         else:
             sample_dump_fun = lambda x: x
             delim = '\n'
-        for dataset_part_name, _ in SET_SPLITS:
+        for dataset_part_name, _ in set_splits:
             dump_fpath = f'log_all_merged_{feature_name}_{dataset_part_name}.txt'
             open(dump_fpath, 'w', encoding='utf-8').write(delim.join(
                 [sample_dump_fun(sample) for
@@ -257,5 +266,6 @@ def dump_features(features_to_get, search_path):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    set_splits = get_set_splits(args.train_split)
 
-    dump_features(args.features, args.search_path)
+    dump_features(args.features, args.search_path, set_splits)
