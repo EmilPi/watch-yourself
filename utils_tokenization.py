@@ -30,7 +30,7 @@ AFTER_TOKENS = ('  ', ' <sp> ')
 UNSPECIAL_TOKENS = {v: k for k, v in SPECIAL_TOKENS.items()}
 
 
-def replace_with_dict(text, tokens_dict, pad=' ', unpad=''):
+def replace_with_dict(text, tokens_dict, pad='', unpad=''):
     for k, v in tokens_dict.items():
         text = text.replace(unpad + k + unpad, pad + v + pad)
     return text

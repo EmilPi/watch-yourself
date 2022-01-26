@@ -9,6 +9,7 @@ from features_text import get_window_titles, get_binary_names, \
     get_times_spent_in_window_change_detect_estimate, \
     get_seq_of_seq, get_tokenized_text, \
     get_delim, join_seq_to_dump_str
+from utils_tokenization import replace_with_dict
 from vars import ENTRY_DATETIME_FORMAT, DEFAULT_TRAIN_SPLIT
 
 
@@ -191,14 +192,12 @@ def get_fpath_with_postfix(fpath, postfix):
 NON_STANDART_CHARS_VIEW = {
     ' ': ' ',
     '\u2028': ' ',
-    '\u200b': '',
+    '\u200b': ' ',  # TODO - check if we don't glue some two words with this replacement
 }
 
 
 def clean_chars(text):
-    for char, shown_as_char in NON_STANDART_CHARS_VIEW.items():
-        text = text.replace(char, shown_as_char)
-    return text
+    return replace_with_dict(text, NON_STANDART_CHARS_VIEW)
 
 
 def read_lines(fpath):
