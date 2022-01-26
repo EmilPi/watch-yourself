@@ -188,8 +188,17 @@ def get_fpath_with_postfix(fpath, postfix):
 
 # ATTENTION! USE IN MODEL EVALUATION TOO!
 # Can we use Byte-Pair-Encoding here?
+NON_STANDART_CHARS_VIEW = {
+    ' ': ' ',
+    '\u2028': ' ',
+    '\u200b': '',
+}
+
+
 def clean_chars(text):
-    return text.replace(' ', ' ').replace('\u2028', ' ')
+    for char, shown_as_char in NON_STANDART_CHARS_VIEW.items():
+        text = text.replace(char, shown_as_char)
+    return text
 
 
 def read_lines(fpath):
