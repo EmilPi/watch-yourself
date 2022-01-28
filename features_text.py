@@ -1,4 +1,7 @@
+import difflib
 import time
+
+import jellyfish
 
 from time_utils import get_moon_phase_part, time_str2seconds_since_epoch
 from utils_tokenization import tokenize
@@ -288,3 +291,28 @@ def get_tokenized_text(lines, fpath=None, **kwargs):
             [line for line in tokenized_lines]
         ))
     return tokenized_lines
+
+
+def _sequence_matcher_ratio(sequence1, sequence2):
+    return difflib.SequenceMatcher(None, sequence1, sequence2)
+
+
+def get_metric_change(lines, function=None, **kwargs):
+    unknown_value = kwargs.get('unknown_value', -1.)  # TODO should be out of range of metric output
+    n_windows_before_to_compare = kwargs.get('compare_offset', 1)
+    ret = [unknown_value] * len(lines)
+    for i in range(len(lines) - n_windows_before_to_compare):
+        line = lines[i + n_windows_before_to_compare]
+        line_before = lines[i]
+        ret[i + n_windows_before_to_compare] = function(line, line_before)
+    return ret
+
+
+def get_metric_change_sequence_matcher(lines, fpath=None, **kwargs):
+    ret = get_metric_change(lines, function=_sequence_matcher_ratio, **kwargs)
+    return ret
+
+
+def get_metric_change_hamming_distance(lines, fpath=None, **kwargs):
+    ret = get_metric_change(lines, function=jellyfish.hamming_distance, **kwargs)
+    return ret

@@ -4,3 +4,4 @@ opencv_python>=4.5.1.48
 # gphoto2>=2.2.4 - test on Windows & Mac before enabling
 idle_time==0.1.0
 requests>=2.25.1
+jellyfish>=0.9.0
