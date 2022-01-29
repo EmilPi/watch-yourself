@@ -167,14 +167,6 @@ def preprocess_full(lines, out_fname='log_preprocessed.txt'):
     return new_lines
 
 
-def dump_train_and_valid_sets(dir, lines_train, lines_valid):
-    print(f'{dir}, n_train={len(lines_train)}, n_valid={len(lines_valid)}')
-    with open(f'{dir}/train.txt', 'w', encoding='utf-8') as ft:
-        ft.write('\n'.join(lines_train))
-    with open(f'{dir}/valid.txt', 'w', encoding='utf-8') as fv:
-        fv.write('\n'.join(lines_valid))
-
-
 def get_folder(fpath):
     return fpath.replace('\\', '/').rsplit('/', 1)[0]
 

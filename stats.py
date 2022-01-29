@@ -17,18 +17,28 @@ def nice_print_top_k(counter, k, restore_from_tokenized=False):
         print(('%s' % count).rjust(biggest_count_char_length), ':', value)
 
 
-if __name__ == '__main__':
-    fpaths = glob('log_all_merged*_train.txt')
-    fpath = choose_from_keyboard(fpaths)
-    print(f'{fpath} chosen')
-
+def print_token_sequences_frequency(fpath,
+                                    token_group_lengths=(1, 2, 4, 8, 16, 32)):
+    if isinstance(token_group_lengths, int):
+        token_group_lengths = (token_group_lengths,)
     lines = open(fpath, 'r', encoding='utf-8').read().splitlines()
-    # token_group_lengths = [14]
-    token_group_lengths = [1, 2, 4, 8, 16, 32]
-    # token_group_lengths = range(1, 32+1)
+    counters_dict = get_token_sequences_counts(lines, token_group_lengths)
+
+    for length, counter in counters_dict.items():
+        print(f'LENGTH = {length}')
+        nice_print_top_k(counter,
+                         10 + max(token_group_lengths) - length,
+                         restore_from_tokenized='tokenize' in fpath
+                         )
+    print('DONE.')
+
+
+def get_token_sequences_counts(lines, token_group_lengths):
+    if isinstance(token_group_lengths, int):
+        token_group_lengths = [token_group_lengths]
     min_length, max_length = min(token_group_lengths), max(token_group_lengths)
     counters_dict = {length: Counter() for length in token_group_lengths}
-
+    # TODO - count with newline tokens (will capture two-line sequences)
     counted_tokens_length = 0
     for line_idx, line in enumerate(lines):
         tokens = line.split(' ')
@@ -45,10 +55,12 @@ if __name__ == '__main__':
                 counter.update([token_of_max_length[:length]])
         counted_tokens_length += len(tokens)
 
-    for length, counter in counters_dict.items():
-        print(f'LENGTH = {length}')
-        nice_print_top_k(counter,
-                         10 + max_length - length,
-                         restore_from_tokenized='tokenize' in fpath
-                         )
-    print('DONE.')
+    return counters_dict
+
+
+if __name__ == '__main__':
+    fpaths = glob('log_all_merged*_train.txt')
+    fpath = choose_from_keyboard(fpaths)
+    print(f'{fpath} chosen')
+
+    print_token_sequences_frequency(fpath)

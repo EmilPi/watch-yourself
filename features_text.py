@@ -161,7 +161,6 @@ def get_time_features(lines, named=False):
             'times_spent_in_window_change_detect_estimate': times_spent_in_window_change_detect_estimate,
             'times_spent_in_window_idle_seq_estimate': times_spent_in_window_idle_seq_estimate,
             'watch_yourself_or_pc_off': watch_yourself_or_pc_off,
-            'watch_yourself_or_pc_off': watch_yourself_or_pc_off,
             'idle_sequences': idle_sequences, 'times_of_day': times_of_day,
             'week_days': week_days, 'moon_phases': moon_phases,
         }
