@@ -1,4 +1,3 @@
 -r requirements.txt
 -r requirements_non_linux.txt
 pygetwindow>=0.0.9
-pyautogui>=0.9.52

@@ -1,8 +1,5 @@
 -r requirements.txt
-# requires xdotool
-# check if we need scrot at all
-gphoto2>=2.2.4
-pyautogui>=0.9.52
-Pillow>=8.3.2
-
-#TODO - fix xdotool linux requirement!!!
+# requires xdotool and possibly scrot
+# TODO check if we need scrot at all
+Pillow>=8.3.2  # this fork of "pillow" !
+# TODO try to reproduce image grab error
