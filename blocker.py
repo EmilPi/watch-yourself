@@ -26,6 +26,8 @@ parser.add_argument('--use-dslrcam', action='store_true',
                     help="If you want to make DSLR camera photos of yourself while doing actions")
 parser.add_argument('--no-dslrcam', action='store_true',
                     help="If you don\'t want to make DSLR camera photos of yourself while doing actions")
+parser.add_argument('--cap-fps', type=int, default=0,
+                    help="Maximum fps of webcam. Default 0 (determined by camera and openCV).")
 parser.add_argument('--use-droidcam', action='store_true',
                     help="If using DroidCam app on Android phone. Webcam URL should be opened in browser too in order for capture functionality to work! Will require --webcam-url anyway.")
 parser.add_argument('--no-droidcam', action='store_true',
@@ -46,30 +48,24 @@ parser.add_argument('--log-titles-only', action='store_true',
 parser.add_argument('--dry-run', action='store_true',
                     help="Log but don't interact with user.")
 
+profile_options = json.load(open('profile_default.json'))
 try:
-    profile_options = json.load(open('profile.json'))
-except FileNotFoundException as e:
-    profile_options = json.load(open('profile_default.json'))
+    profile_options.update( json.load(open('profile.json')) )
+except FileNotFoundError as e:
+    print('Using default profile values before parsing command line args; create \'profile.json\' file to override.')
 use_webcam = profile_options.get('use_webcam', False)
 use_dslrcam = profile_options.get('use_dslrcam', False)
-use_droidcam = profile_options.get('use_droidcam', False)
+CAP_FPS = profile_options.get('cap_fps', 0)
 use_v4l2_backend = profile_options.get('use_v4l2_backend', False)
 no_screenshot = profile_options.get('no_screenshot', False)
+use_droidcam = profile_options.get('use_droidcam', False)
 webcam_url = profile_options.get('webcam_url', '')
-
-if os.path.exists('profile.json'):
-    profile_options = json.load(open('profile.json'))
-    use_webcam = profile_options.get('use_webcam', use_webcam)
-    use_dslrcam = profile_options.get('use_dslrcam', use_dslrcam)
-    use_droidcam = profile_options.get('use_droidcam', use_droidcam)
-    use_v4l2_backend = profile_options.get('use_v4l2_backend', use_v4l2_backend)
-    no_screenshot = profile_options.get('no_screenshot', no_screenshot)
-    webcam_url = profile_options.get('webcam_url', webcam_url)
 
 args = parser.parse_args()
 if args.use_webcam: use_webcam = True
 if args.no_webcam: use_webcam = False
 if args.use_dslrcam: use_dslrcam = True
+if args.cap_fps: CAP_FPS = args.cap_fps
 if args.no_dslrcam: use_dslrcam = False
 if args.use_droidcam: use_droidcam = True
 if args.no_droidcam: use_droidcam = False
@@ -78,10 +74,9 @@ if args.no_screenshot: no_screenshot = True
 if args.use_screenshot: no_screenshot = False
 if args.use_v4l2_backend: use_v4l2_backend = True
 if args.no_v4l2_backend: use_v4l2_backend = False
-no_screenshot = args.no_screenshot
-webcam_url = args.webcam_url
-log_titles_only = args.log_titles_only
-dry_run = args.dry_run
+webcam_url = args.webcam_url or webcam_url
+log_titles_only = args.log_titles_only or False
+dry_run = args.dry_run or False
 
 if log_titles_only:
     no_screenshot = True
@@ -109,8 +104,6 @@ SCRIPT_PATH = '.'
 IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
 LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
 SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
-
-CAP_FPS_MAX = 2
 
 # Command '['xdotool', 'getwindowpid', '6291465']' returned non-zero exit status 1.
 # Traceback (most recent call last):
@@ -146,7 +139,8 @@ class MultiLogger(object):
             else:
                 self.cap = cv2.VideoCapture(0)
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # TODO test again with 0 on notebook webcam, ext. webcam
-            self.cap.set(cv2.CAP_PROP_FPS, CAP_FPS_MAX)
+            if CAP_FPS:
+                self.cap.set(cv2.CAP_PROP_FPS, CAP_FPS)
         if not self.use_dslrcam:
             self.dslr = None
         else:
@@ -331,5 +325,5 @@ while True:
 
     sleep_time = 1
     # !! this sleep time must not be shorter than
-    # (1. / CAP_FPS_MAX)
+    # (1. / CAP_FPS)
     sleep(sleep_time)
