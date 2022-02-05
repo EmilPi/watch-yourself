@@ -1,5 +1,7 @@
 import argparse
 import re
+from sys import argv
+DEBUG = 'debug' in argv
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tokenize', metavar='DIR',
@@ -25,14 +27,33 @@ SPECIAL_TOKENS = {
     ':': '<cl>',
     '*': '<star>',
     '%': '<prct>',
+    # '\n': '<nwln>',
 }
 AFTER_TOKENS = ('  ', ' <sp> ')
 UNSPECIAL_TOKENS = {v: k for k, v in SPECIAL_TOKENS.items()}
 
 
 def replace_with_dict(text, tokens_dict, pad='', unpad=''):
+    tokens_total = len(tokens_dict)
+    token_idx = 0
     for k, v in tokens_dict.items():
         text = text.replace(unpad + k + unpad, pad + v + pad)
+        if DEBUG:
+            token_idx += 1
+            print(f'\rReplaced {token_idx} tokens of {tokens_total}', end='.')
+    if pad == unpad == ' ':
+        # replace first and last tokens which don't have spaces around
+        if ' ' not in text:
+            print('No spaces in text: replacing without padding')
+            return replace_with_dict(text, tokens_dict, pad='', unpad='')
+        else:
+            print('replacing first and last tokens without padding')
+            first_token, rest = text.split(' ', 1)
+            text = replace_with_dict(first_token, tokens_dict) + rest
+            rest, last_token = text.rsplit(' ', 1)
+            text = rest + replace_with_dict(last_token, tokens_dict)
+    if DEBUG:
+        print('')
     return text
 
 
