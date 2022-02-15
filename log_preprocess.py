@@ -11,14 +11,51 @@ from features_text import get_window_titles, get_binary_names, \
     get_delim, join_seq_to_dump_str
 from vars import ENTRY_DATETIME_FORMAT
 
+FEATURES_ALL = {
+    'binary_names': (get_binary_names, (), {}),
+    'window_titles': (get_window_titles, (), {}),
+    'window_titles_tokenized': (
+        (get_window_titles, (), {}),
+        (get_tokenized_text, (), {})
+    ),
+    'idle_sequences': (get_idle_sequences, (), {}),
+    'times_spent_in_window_change_detect_estimate': (get_times_spent_in_window_change_detect_estimate, (), {}),
+    'times_spent_in_window_idle_seq_estimate': (get_times_spent_in_window_idle_seq_estimate, (), {}),
+    'watch_yourself_or_pc_off': (get_watch_yourself_or_pc_off, (), {}),
+    'idle_sequences_seq_5': (
+        (get_idle_sequences, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'times_spent_in_window_change_detect_estimate_seq_5': (
+        (get_times_spent_in_window_change_detect_estimate, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'times_spent_in_window_idle_seq_estimate_seq_5': (
+        (get_times_spent_in_window_idle_seq_estimate, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'window_titles_seq_5': (
+        (get_window_titles, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'window_titles_seq_6_include_last': (
+        (get_window_titles, (), {}),
+        (get_seq_of_seq, (), {'length': 6, 'include_last': True})
+    ),
+}
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--train-split", default=.9,
                     type=float,
                     help="directory to save checkpoints and outputs")
 parser.add_argument("--search-path", default='./',
                     help="where to search for log files")
-parser.add_argument("--tokenize-special", action="store_true",
-                    help="whether to tokenize special chars as words")
+# parser.add_argument("--tokenize-special", action="store_true",
+#                     help="whether to tokenize special chars as words")
+parser.add_argument("--features", nargs='+',
+                    default=["window_titles"],
+                    choices=list(FEATURES_ALL.keys()),
+                    help="features to create from log files: can input multiple, space delimited")
 
 
 def fix_datetime_format(datetime_str):
@@ -154,59 +191,13 @@ def clean_chars(text):
     return text.replace(' ', ' ').replace('\u2028', ' ')
 
 
-FEATURES_ALL = {
-    'binary_names': (get_binary_names, (), {}),
-    'window_titles': (get_window_titles, (), {}),
-    'window_titles_tokenized': (
-        (get_window_titles, (), {}),
-        (get_tokenized_text, (), {})
-    ),
-    'idle_sequences': (get_idle_sequences, (), {}),
-    'times_spent_in_window_change_detect_estimate': (get_times_spent_in_window_change_detect_estimate, (), {}),
-    'times_spent_in_window_idle_seq_estimate': (get_times_spent_in_window_idle_seq_estimate, (), {}),
-    'watch_yourself_or_pc_off': (get_watch_yourself_or_pc_off, (), {}),
-    'idle_sequences_seq_5': (
-        (get_idle_sequences, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'times_spent_in_window_change_detect_estimate_seq_5': (
-        (get_times_spent_in_window_change_detect_estimate, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'times_spent_in_window_idle_seq_estimate_seq_5': (
-        (get_times_spent_in_window_idle_seq_estimate, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'window_titles_seq_5': (
-        (get_window_titles, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'window_titles_seq_6_include_last': (
-        (get_window_titles, (), {}),
-        (get_seq_of_seq, (), {'length': 6, 'include_last': True})
-    ),
-}
-FEATURES_NAMES_TO_GET = [
-    'window_titles_tokenized'
-]
-FEATURES = {k: FEATURES_ALL[k] for k in FEATURES_NAMES_TO_GET}
-
-
 def read_lines(fpath):
     return open(fpath, encoding='utf-8').read().splitlines()
 
 
-def split_lines(lines):
-    n_train = int(args.train_split * len(lines))
-    return lines[:n_train], lines[n_train:]
-
-
-def read_and_split_lines(fpath):
-    lines = read_lines(fpath)
-    return split_lines(lines)
-
 def get_range_rel2len(array, range):
     return array[int(range[0] * len(array)):int(range[1] * len(array))]
+
 
 SET_SPLITS = [
     ('train', [0, 0.9],),
@@ -214,15 +205,15 @@ SET_SPLITS = [
     ('test', [0.99, 1.],),
 ]
 
-if __name__ == '__main__':
-    args = parser.parse_args()
+
+def dump_features(features_to_get, search_path):
+    FEATURES = {k: FEATURES_ALL[k] for k in features_to_get}
     all_lines_partitioned = dict.fromkeys(FEATURES.keys())
     for feature_name in FEATURES:
         all_lines_partitioned[feature_name] = {}
         for dataset_part_name, _ in SET_SPLITS:
             all_lines_partitioned[feature_name][dataset_part_name] = []
-
-    all_log_files_fpaths = [str(_) for _ in list(Path(args.search_path).rglob('log_all.txt'))]
+    all_log_files_fpaths = [str(_) for _ in list(Path(search_path).rglob('log_all.txt'))]
     for fpath in all_log_files_fpaths:
         print(f'processing {fpath} ...')
         fpath_preprocessed = get_fpath_with_postfix(fpath, '_processed')
@@ -242,11 +233,9 @@ if __name__ == '__main__':
                 all_lines_partitioned[feature_name][dataset_part_name].extend(
                     get_range_rel2len(feature_lines, part_range)
                 )
-
     for feature_name, feature_fun_chain in FEATURES.items():
         if not isinstance(feature_fun_chain[0], tuple):
             feature_fun_chain = (feature_fun_chain,)
-        seq_of_seq = feature_fun_chain[-1][0] == get_seq_of_seq
 
         if isinstance(all_lines_partitioned[feature_name]['train'][0], (list, tuple)):
             sample_dump_fun = join_seq_to_dump_str
@@ -264,3 +253,9 @@ if __name__ == '__main__':
                  sample in
                  all_lines_partitioned[feature_name][dataset_part_name]]
             ))
+
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    dump_features(args.features, args.search_path)
