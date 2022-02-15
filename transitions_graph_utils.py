@@ -35,16 +35,18 @@ BROWSERS_LIST = SETTINGS['BROWSERS_LIST']
 
 # this is only an example!
 def get_group(title):
-    if 'JIRA' in title or 'Microsoft Teams' in title:
+    if title == RARE_TITLE_REPLACEMENT:
         return 1
-    elif any([b.lower() in title.lower() for b in BLACKLISTED_PAGES_PARTS]):
+    if 'JIRA' in title or 'Microsoft Teams' in title:
         return 2
-    elif 'Mozilla Firefox' in title or 'Google Chrome' in title:
+    elif any([b.lower() in title.lower() for b in BLACKLISTED_PAGES_PARTS]):
         return 3
-    elif 'VLC media player' in title:
+    elif 'Mozilla Firefox' in title or 'Google Chrome' in title:
         return 4
-    elif ('emil@' in title) and ('Lenovo' in title):
+    elif 'VLC media player' in title:
         return 5
+    elif ('emil@' in title) and ('Lenovo' in title):
+        return 6
     else:
         return 0
 
@@ -53,29 +55,40 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs): super().__init__(*args, directory='./', **kwargs)
 
 
+NODE_LIMIT = 400
+RARE_TITLE_REPLACEMENT = '<SOME~RARE~TITLE>'
 if __name__ == '__main__':
     dump_features(['window_titles'], './')
     titles_seq = open('log_all_processed_window_titles.txt', encoding='utf-8').read().splitlines()
     titles_counter = Counter(titles_seq)
     titles_unique = list(titles_counter.keys())
-    titles_idxs = [titles_unique.index(t) for t in titles_seq]
+    titles_unique_rare_joined = titles_counter.most_common(NODE_LIMIT - 1)
     print(f'Total titles = {len(titles_seq)}')
     print(f'Unique titles = {len(titles_unique)}')
+    if len(titles_unique) < NODE_LIMIT:
+        titles_unique_rare_joined = titles_unique
+    else:
+        titles_unique_rare_joined = [title for title, count in titles_counter.most_common(NODE_LIMIT - 1)] \
+                                    + [RARE_TITLE_REPLACEMENT]
+        titles_seq = [t if t in titles_unique_rare_joined else titles_unique_rare_joined[-1]
+                      for t in titles_seq]
 
+    titles_idxs = [titles_unique_rare_joined.index(t) for t in titles_seq]
     transition_graph = build_transition_graph(titles_idxs)
     # print(transition_graph)
     d3js_nodes = [{
         "id": title_idx,
-        "group": get_group(titles_unique[title_idx]), "sentence": titles_unique[title_idx],
+        "group": get_group(titles_unique_rare_joined[title_idx]),
+        "sentence": titles_unique_rare_joined[title_idx],
         "total_out": sum(transition_graph[title_idx].values())
     } for title_idx in transition_graph]
     d3js_links = []
-    for source_node in transition_graph:
-        for target_node in transition_graph[source_node]:
+    for source_title_idx in transition_graph:
+        for target_title_idx in transition_graph[source_title_idx]:
             d3js_links.append({
-                "source": source_node,
-                "target": target_node,
-                "value": "%d" % round(1 + log2(transition_graph[source_node][target_node]))
+                "source": source_title_idx,
+                "target": target_title_idx,
+                "value": "%d" % round(1 + log2(transition_graph[source_title_idx][target_title_idx]))
             })
 
     json.dump({
