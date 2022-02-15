@@ -48,7 +48,7 @@ def get_group(title):
 
 if __name__ == '__main__':
     dump_features(['window_titles'], './')
-    titles_seq = open('log_all_processed_window_titles.txt').read().splitlines()[:]
+    titles_seq = open('log_all_processed_window_titles.txt', encoding='utf-8').read().splitlines()
     titles_counter = Counter(titles_seq)
     titles_unique = list(titles_counter.keys())
     titles_idxs = [titles_unique.index(t) for t in titles_seq]
