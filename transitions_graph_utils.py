@@ -1,3 +1,6 @@
+import http.server
+import socketserver
+
 import json
 from collections import Counter
 from math import log2
@@ -46,6 +49,10 @@ def get_group(title):
         return 0
 
 
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs): super().__init__(*args, directory='./', **kwargs)
+
+
 if __name__ == '__main__':
     dump_features(['window_titles'], './')
     titles_seq = open('log_all_processed_window_titles.txt', encoding='utf-8').read().splitlines()
@@ -78,3 +85,11 @@ if __name__ == '__main__':
         ensure_ascii=False,
         indent=2
     )
+
+    PORT = 8000
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print("serving at port", PORT)
+        html_file_name = 'transitions_graph_view.html'
+        print(f'open http://localhost:{PORT} in browser and then click "{html_file_name}" file;'
+              f' press Ctrl+C in this terminal to stop serving.')
+        httpd.serve_forever()
