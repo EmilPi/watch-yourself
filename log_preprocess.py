@@ -215,7 +215,7 @@ def get_set_splits(train_split):
     ]
 
 
-def dump_features(features_to_get, search_path, set_splits):
+def dump_features(features_to_get, search_path, set_splits=SET_SPLITS):
     FEATURES = {k: FEATURES_ALL[k] for k in features_to_get}
     all_lines_partitioned = dict.fromkeys(FEATURES.keys())
     for feature_name in FEATURES:
