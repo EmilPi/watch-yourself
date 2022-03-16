@@ -4,8 +4,8 @@ import json
 
 import requests
 
-from transitions_graph_utils import is_browser_window_title
 from utils import close_tab, close_window
+from utils_text import is_browser_window_title_bad
 from cross_platform import notify
 
 from get_active_window_title import get_active_window
@@ -104,7 +104,6 @@ if use_dslrcam:
 SCRIPT_PATH = '.'
 IMG_PATH = '%s%simgs' % (SCRIPT_PATH, os.sep)
 LOG_PATH = '%s%slog_all.txt' % (SCRIPT_PATH, os.sep)
-SETTINGS_PATH = '%s%ssettings.json' % (SCRIPT_PATH, os.sep)
 
 # Command '['xdotool', 'getwindowpid', '6291465']' returned non-zero exit status 1.
 # Traceback (most recent call last):
@@ -263,9 +262,6 @@ class MultiLogger(object):
 class MultiBlocker(object):
     def __init__(self, dry_run=False):
         self.dry_run = dry_run
-        settings = json.load(open(SETTINGS_PATH, encoding='utf-8'))
-        self.BROWSERS_BINARIES_NAMES_LIST = settings['BROWSERS_BINARIES_NAMES_LIST']
-        self.BLACKLISTED_WINDOWS_TITLES_PARTS = settings['BLACKLISTED_WINDOWS_TITLES_PARTS']
 
     def close_tab(self):
         if self.dry_run:
@@ -280,17 +276,9 @@ class MultiBlocker(object):
             close_window()
 
     def is_bad_browser_window(self, window_title):
-        is_browser_binary = any([
-            (
-                window_title.lower().startswith(browser_binary_name.lower()) or
-                window_title.lower().endswith(browser_binary_name.lower())
-            )
-            for browser_binary_name in self.BROWSERS_BINARIES_NAMES_LIST])
-        return (is_browser_binary or is_browser_window_title(window_title)) \
-            and any([
-                blacklisted_part.lower() in window_title.lower()
-                for blacklisted_part in self.BLACKLISTED_WINDOWS_TITLES_PARTS
-        ])
+        binary_name = window_title.split(' __ ', 1)[0]  # will only be meaningful for Linux
+        window_title = window_title.split(' __ ', 1)[-1]
+        return is_browser_window_title_bad(window_title, binary_name)
 
     def notify_about_violation(self):
         notify("You are wasting time that is given to you!", "Your very fate is in danger!")

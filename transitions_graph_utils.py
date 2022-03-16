@@ -1,14 +1,13 @@
 import http.server
-import os.path
+import json
 import re
 import socketserver
-
-import json
 from collections import Counter
 from math import log2
 
 from log_preprocess import dump_features
-from utils import json_load, flatten
+from utils_text import is_browser_window_title
+from vars import BLACKLISTED_WINDOWS_TITLES_PARTS, BROWSERS_WINDOWS_TITLES_STRINGS, WINDOWS_GROUPS
 
 
 def build_transition_graph(seq, graph=None):
@@ -30,21 +29,6 @@ def build_transition_graph(seq, graph=None):
     return graph
 
 
-SETTINGS = json_load('settings.json')
-BLACKLISTED_WINDOWS_TITLES_PARTS = SETTINGS['BLACKLISTED_WINDOWS_TITLES_PARTS']
-# BROWSERS_BINARIES_NAMES_LIST = SETTINGS['BROWSERS_BINARIES_NAMES_LIST']
-BROWSERS_WINDOWS_TITLES_STRINGS = flatten(SETTINGS['BROWSERS_WINDOWS_TITLES_STRINGS'])
-WINDOWS_GROUPS = json_load('windows_groups.json') if os.path.exists('windows_groups.json') \
-            else json_load('windows_groups_example.json')
-
-
-def is_browser_window_title(title):
-    for browser_window_title_string in BROWSERS_WINDOWS_TITLES_STRINGS:
-        if browser_window_title_string.lower() in title.lower():
-            return True
-    return False
-
-
 def is_browser_entry_point(title):
     for browser in BROWSERS_WINDOWS_TITLES_STRINGS:
         if title.lower() == browser.lower():
@@ -62,7 +46,7 @@ def is_windows_switching(title):
 
 def get_filter(title):
     return is_browser_entry_point(title) \
-        or is_windows_switching(title)
+           or is_windows_switching(title)
 
 
 # this is only an example!
@@ -79,7 +63,7 @@ def get_group(title):
 
     for group in WINDOWS_GROUPS.values():
         if any([string.lower() in title.lower() for string in group['strings']]) \
-        or any([re.search(pattern.lower(), title.lower()) for pattern in group['patterns']]):
+                or any([re.search(pattern.lower(), title.lower()) for pattern in group['patterns']]):
             return base_group_idx * 100
         base_group_idx += 1
 

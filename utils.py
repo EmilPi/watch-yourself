@@ -1,7 +1,8 @@
 import json
 
-from cross_platform import IS_MAC
 import pyautogui as pygui
+
+from cross_platform import IS_MAC
 
 
 def json_load(fname): return json.load(open(fname))

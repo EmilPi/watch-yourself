@@ -3,48 +3,9 @@ from pathlib import Path
 
 import numpy as np
 
-from features_text import get_window_titles, get_binary_names, \
-    get_idle_sequences, get_times_spent_in_window_idle_seq_estimate, \
-    get_watch_yourself_or_pc_off, \
-    get_times_spent_in_window_change_detect_estimate, \
-    get_seq_of_seq, get_tokenized_text, \
-    get_delim, join_seq_to_dump_str
+from features import get_delim, join_seq_to_dump_str, FEATURES_ALL
 from utils_tokenization import replace_with_dict
 from vars import ENTRY_DATETIME_FORMAT, DEFAULT_TRAIN_SPLIT
-
-
-FEATURES_ALL = {
-    'binary_names': (get_binary_names, (), {}),
-    'window_titles': (get_window_titles, (), {}),
-    'window_titles_tokenized': (
-        (get_window_titles, (), {}),
-        (get_tokenized_text, (), {})
-    ),
-    'idle_sequences': (get_idle_sequences, (), {}),
-    'times_spent_in_window_change_detect_estimate': (get_times_spent_in_window_change_detect_estimate, (), {}),
-    'times_spent_in_window_idle_seq_estimate': (get_times_spent_in_window_idle_seq_estimate, (), {}),
-    'watch_yourself_or_pc_off': (get_watch_yourself_or_pc_off, (), {}),
-    'idle_sequences_seq_5': (
-        (get_idle_sequences, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'times_spent_in_window_change_detect_estimate_seq_5': (
-        (get_times_spent_in_window_change_detect_estimate, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'times_spent_in_window_idle_seq_estimate_seq_5': (
-        (get_times_spent_in_window_idle_seq_estimate, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'window_titles_seq_5': (
-        (get_window_titles, (), {}),
-        (get_seq_of_seq, (), {'length': 5, })
-    ),
-    'window_titles_seq_6_include_last': (
-        (get_window_titles, (), {}),
-        (get_seq_of_seq, (), {'length': 6, 'include_last': True})
-    ),
-}
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--train-split", default=DEFAULT_TRAIN_SPLIT,
@@ -74,12 +35,12 @@ def join_idle_times(activity_times):
         # sleep time is 1, so 0.1, 0.3 is not continuation
         # idle time logged is continuation if the number increase at least twice and more than by a second
         next_idle_time_is_continuation_of_this_idle_time = (
-            # TODO - try to find out what is more realistic estimate for logging time
-            np.diff(activity_times_np) > 1.001
-            # let's say .001 is time of logging, although it is not true
-        ) * (
-            np.diff(activity_times_np) > activity_times_np[:-1]
-        )
+                                                               # TODO - try to find out what is more realistic estimate for logging time
+                                                                   np.diff(activity_times_np) > 1.001
+                                                               # let's say .001 is time of logging, although it is not true
+                                                           ) * (
+                                                                   np.diff(activity_times_np) > activity_times_np[:-1]
+                                                           )
 
         activity_times_np[:-1][next_idle_time_is_continuation_of_this_idle_time] = np.nan
         activity_times_np = activity_times_np[np.logical_not(np.isnan(activity_times_np))]
@@ -206,6 +167,7 @@ SET_SPLITS = [
     ('test', [0.99, 1.],),
 ]
 
+
 def get_set_splits(train_split):
     valid_split = (1. - train_split) * train_split
     return [
@@ -215,7 +177,7 @@ def get_set_splits(train_split):
     ]
 
 
-def dump_features(features_to_get, search_path, set_splits=SET_SPLITS):
+def get_features(features_to_get, search_path, set_splits=SET_SPLITS):
     FEATURES = {k: FEATURES_ALL[k] for k in features_to_get}
     all_lines_partitioned = dict.fromkeys(FEATURES.keys())
     for feature_name in FEATURES:
@@ -242,6 +204,12 @@ def dump_features(features_to_get, search_path, set_splits=SET_SPLITS):
                 all_lines_partitioned[feature_name][dataset_part_name].extend(
                     get_range_rel2len(feature_lines, part_range)
                 )
+    return all_lines_partitioned
+
+
+def dump_features(features_to_get, search_path, set_splits=SET_SPLITS):
+    FEATURES = {k: FEATURES_ALL[k] for k in features_to_get}
+    all_lines_partitioned = get_features(features_to_get, search_path, set_splits=set_splits)
     for feature_name, feature_fun_chain in FEATURES.items():
         if not isinstance(feature_fun_chain[0], tuple):
             feature_fun_chain = (feature_fun_chain,)

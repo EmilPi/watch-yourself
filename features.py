@@ -4,6 +4,7 @@ import time
 import jellyfish
 
 from time_utils import get_moon_phase_part, time_str2seconds_since_epoch
+from utils_text import is_browser_window_title_bad
 from utils_tokenization import tokenize
 from vars import ENTRY_DATETIME_FORMAT
 
@@ -266,14 +267,14 @@ def get_seq_of_seq(lines, fpath=None, **kwargs):
         elif line_idx < length:
             seq_of_seq[line_idx] = empty_seq[:]
             seq_of_seq[line_idx][-line_idx:] = lines[
-                last_included:
-                (line_idx + last_included)
-            ]
+                                               last_included:
+                                               (line_idx + last_included)
+                                               ]
         else:
             seq_of_seq[line_idx] = lines[
-                (line_idx - length + last_included):
-                (line_idx + last_included)
-            ]
+                                   (line_idx - length + last_included):
+                                   (line_idx + last_included)
+                                   ]
 
     if fpath:
         delim = get_delim(length)
@@ -315,3 +316,37 @@ def get_metric_change_sequence_matcher(lines, fpath=None, **kwargs):
 def get_metric_change_hamming_distance(lines, fpath=None, **kwargs):
     ret = get_metric_change(lines, function=jellyfish.hamming_distance, **kwargs)
     return ret
+
+
+FEATURES_ALL = {
+    'binary_names': (get_binary_names, (), {}),
+    'window_titles': (get_window_titles, (), {}),
+    'window_titles_tokenized': (
+        (get_window_titles, (), {}),
+        (get_tokenized_text, (), {})
+    ),
+    'idle_sequences': (get_idle_sequences, (), {}),
+    'times_spent_in_window_change_detect_estimate': (get_times_spent_in_window_change_detect_estimate, (), {}),
+    'times_spent_in_window_idle_seq_estimate': (get_times_spent_in_window_idle_seq_estimate, (), {}),
+    'watch_yourself_or_pc_off': (get_watch_yourself_or_pc_off, (), {}),
+    'idle_sequences_seq_5': (
+        (get_idle_sequences, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'times_spent_in_window_change_detect_estimate_seq_5': (
+        (get_times_spent_in_window_change_detect_estimate, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'times_spent_in_window_idle_seq_estimate_seq_5': (
+        (get_times_spent_in_window_idle_seq_estimate, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'window_titles_seq_5': (
+        (get_window_titles, (), {}),
+        (get_seq_of_seq, (), {'length': 5, })
+    ),
+    'window_titles_seq_6_include_last': (
+        (get_window_titles, (), {}),
+        (get_seq_of_seq, (), {'length': 6, 'include_last': True})
+    ),
+}
