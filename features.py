@@ -318,6 +318,14 @@ def get_metric_change_hamming_distance(lines, fpath=None, **kwargs):
     return ret
 
 
+def get_window_goodness(lines, fpath=None, **kwargs):
+    ret = [int(is_browser_window_title_bad(line)) for line in lines]
+    if fpath:
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(str(_) for _ in ret))
+    return ret
+
+
 FEATURES_ALL = {
     'binary_names': (get_binary_names, (), {}),
     'window_titles': (get_window_titles, (), {}),
@@ -349,4 +357,5 @@ FEATURES_ALL = {
         (get_window_titles, (), {}),
         (get_seq_of_seq, (), {'length': 6, 'include_last': True})
     ),
+    'window_titles_goodness': (get_window_goodness, (), {}),
 }
