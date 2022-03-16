@@ -107,14 +107,12 @@ def get_time_features(lines, named=False):
 
     times_spent_in_window_change_detect_estimate = zeros[:]
     times_spent_in_window_idle_seq_estimate = zeros[:]
-    watch_yourself_or_pc_off = zeros[:]
     idle_sequences = zeros[:]
+    detected_actions_num_estimate = zeros[:]
     times_of_day = zeros[:]
     week_days = zeros[:]
     moon_phases = zeros[:]
     watch_yourself_or_pc_off = zeros[:]
-
-    idle_seq_sums_approx = zeros[:]
 
     seconds_since_epoch_last = None
     for line_idx, line in enumerate(lines):
@@ -135,6 +133,7 @@ def get_time_features(lines, named=False):
             print(repr(idle_seq))
             raise e
         idle_sequences[line_idx] = idle_seq_num
+        detected_actions_num_estimate[line_idx] = len(idle_seq_num)
         idle_seq_sum = sum(idle_seq_num)
         # TODO - try to evaluate this better by plotting elapsed time from window on time VS idle_seq_sum
         # When idle time is less than previous one
@@ -164,8 +163,9 @@ def get_time_features(lines, named=False):
             'watch_yourself_or_pc_off': watch_yourself_or_pc_off,
             'idle_sequences': idle_sequences, 'times_of_day': times_of_day,
             'week_days': week_days, 'moon_phases': moon_phases,
+            'actions_num_estimate': detected_actions_num_estimate,
         }
-    return times_spent_in_window_change_detect_estimate, times_spent_in_window_idle_seq_estimate, watch_yourself_or_pc_off, idle_sequences, times_of_day, week_days, moon_phases
+    return times_spent_in_window_change_detect_estimate, times_spent_in_window_idle_seq_estimate, watch_yourself_or_pc_off, idle_sequences, times_of_day, week_days, moon_phases, detected_actions_num_estimate
 
 
 def get_window_titles(lines, fpath=None):
@@ -212,6 +212,15 @@ def get_watch_yourself_or_pc_off(lines, fpath=None):
             print(watch_yourself_or_pc_off)
             raise e
     return watch_yourself_or_pc_off
+
+
+def get_actions_num_estimate(lines, fpath):
+    time_features = get_time_features(lines, True)
+    ret = time_features['actions_num_estimate']
+    if fpath:
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(str(_) for _ in ret))
+    return ret
 
 
 def get_binary_names(lines, fpath=None):
@@ -310,11 +319,17 @@ def get_metric_change(lines, function=None, **kwargs):
 
 def get_metric_change_sequence_matcher(lines, fpath=None, **kwargs):
     ret = get_metric_change(lines, function=_sequence_matcher_ratio, **kwargs)
+    if fpath:
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(str(_) for _ in ret))
     return ret
 
 
 def get_metric_change_hamming_distance(lines, fpath=None, **kwargs):
     ret = get_metric_change(lines, function=jellyfish.hamming_distance, **kwargs)
+    if fpath:
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(str(_) for _ in ret))
     return ret
 
 
@@ -349,6 +364,7 @@ FEATURES_ALL = {
         (get_times_spent_in_window_idle_seq_estimate, (), {}),
         (get_seq_of_seq, (), {'length': 5, })
     ),
+    'actions_num_estimate': (get_actions_num_estimate, (), {}),
     'window_titles_seq_5': (
         (get_window_titles, (), {}),
         (get_seq_of_seq, (), {'length': 5, })
@@ -358,4 +374,12 @@ FEATURES_ALL = {
         (get_seq_of_seq, (), {'length': 6, 'include_last': True})
     ),
     'window_titles_goodness': (get_window_goodness, (), {}),
+    'metric_change_sequence_match': (
+        (get_window_titles, (), {}),
+        (get_metric_change_sequence_matcher, (), {})
+    ),
+    'metric_change_hamming_distance': (
+        (get_window_titles, (), {}),
+        (get_metric_change_hamming_distance, (), {})
+    ),
 }
