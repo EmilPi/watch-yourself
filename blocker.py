@@ -231,13 +231,17 @@ class MultiLogger(object):
         dslr.exit()
 
     def log_idle(self):
-        idle_time = get_idle_time()
-        if idle_time > 2 * self.last_idle_time \
-                or idle_time < self.last_idle_time:
-            self.logfile.write('\t%.3f' % idle_time)
-            if idle_time > self.MIN_IDLE_LOGGING_INTERVAL:
-                self.log_pictures()
-            self.last_idle_time = idle_time
+        try:
+            idle_time = get_idle_time()
+            if idle_time > 2 * self.last_idle_time \
+                    or idle_time < self.last_idle_time:
+                self.logfile.write('\t%.3f' % idle_time)
+                if idle_time > self.MIN_IDLE_LOGGING_INTERVAL:
+                    self.log_pictures()
+                self.last_idle_time = idle_time
+        except Exception as e:
+            print(e)
+            print('WARNING: could not get idle time.')
 
     def log_pictures(self):
         # TODO - make this non-blocking maybe?
