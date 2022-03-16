@@ -1,0 +1,31 @@
+{
+  "Work": {
+    "strings": [
+      "JIRA",
+      "Microsoft Teams"
+    ],
+    "patterns": [
+    ]
+  },
+  "Development": {
+    "strings": [
+      "IntelliJ IDEA",
+      "PyCharm",
+      "WebStorm",
+      "Android Studio",
+      ".java",
+      ".ts",
+      ".py",
+      ".scss"
+    ],
+    "patterns": [
+    ]
+  },
+  "Entertainment": {
+    "strings": [
+      "VLC media player"
+    ],
+    "patterns": [
+    ]
+  }
+}

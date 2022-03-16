@@ -1,4 +1,6 @@
 import http.server
+import os.path
+import re
 import socketserver
 
 import json
@@ -6,7 +8,7 @@ from collections import Counter
 from math import log2
 
 from log_preprocess import dump_features
-from utils import json_load
+from utils import json_load, flatten
 
 
 def build_transition_graph(seq, graph=None):
@@ -29,30 +31,62 @@ def build_transition_graph(seq, graph=None):
 
 
 SETTINGS = json_load('settings.json')
-BLACKLISTED_PAGES_PARTS = SETTINGS['BLACKLISTED_PAGES_PARTS']
-BROWSERS_LIST = SETTINGS['BROWSERS_LIST']
+BLACKLISTED_WINDOWS_TITLES_PARTS = SETTINGS['BLACKLISTED_WINDOWS_TITLES_PARTS']
+# BROWSERS_BINARIES_NAMES_LIST = SETTINGS['BROWSERS_BINARIES_NAMES_LIST']
+BROWSERS_WINDOWS_TITLES_STRINGS = flatten(SETTINGS['BROWSERS_WINDOWS_TITLES_STRINGS'])
+WINDOWS_GROUPS = json_load('windows_groups.json') if os.path.exists('windows_groups.json') \
+            else json_load('windows_groups_example.json')
+
+
+def is_browser_window_title(title):
+    for browser_window_title_string in BROWSERS_WINDOWS_TITLES_STRINGS:
+        if browser_window_title_string.lower() in title.lower():
+            return True
+    return False
+
+
+def is_browser_entry_point(title):
+    for browser in BROWSERS_WINDOWS_TITLES_STRINGS:
+        if title.lower() == browser.lower():
+            return True
+        for prefix in ['New Tab', 'Новая вкладка']:
+            for delim in ['—', '-']:
+                if title.lower() == f'{prefix} {delim} {browser}'.lower():
+                    return True
+    return False
+
+
+def is_windows_switching(title):
+    return title in ['Task Switching', 'Task View', '']
+
 
 def get_filter(title):
-    return 'Mozilla Firefox' in title or \
-           'Task Switching' in title or \
-           'Task View' in title
+    return is_browser_entry_point(title) \
+        or is_windows_switching(title)
+
 
 # this is only an example!
 def get_group(title):
+    base_group_idx = 1
+
     if title == RARE_TITLE_REPLACEMENT:
-        return 1
-    if 'JIRA' in title or 'Microsoft Teams' in title:
-        return 2
-    elif any([b.lower() in title.lower() for b in BLACKLISTED_PAGES_PARTS]):
-        return 3
-    elif 'Mozilla Firefox' in title or 'Google Chrome' in title:
+        return base_group_idx * 100
+    base_group_idx += 1
+
+    if any([b.lower() in title.lower() for b in BLACKLISTED_WINDOWS_TITLES_PARTS]):
+        return base_group_idx * 100
+    base_group_idx += 1
+
+    for group in WINDOWS_GROUPS.values():
+        if any([string.lower() in title.lower() for string in group['strings']]) \
+        or any([re.search(pattern.lower(), title.lower()) for pattern in group['patterns']]):
+            return base_group_idx * 100
+        base_group_idx += 1
+
+    if is_browser_window_title(title):
         return 4
-    elif 'VLC media player' in title:
-        return 5
-    elif ('emil@' in title) and ('Lenovo' in title):
-        return 6
-    else:
-        return 0
+
+    return 0
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):

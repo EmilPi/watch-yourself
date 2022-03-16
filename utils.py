@@ -13,3 +13,14 @@ def close_tab():  # Ctrl+W / Cmd+W on Mac
 
 def close_window():  # ALT+F4 / ? on Mac ?
     pygui.hotkey('alt', 'f4')
+
+
+def flatten(deep_array):
+    ret = []
+    if isinstance(deep_array, dict):
+        for v in deep_array.values():
+            ret.extend(v)
+    elif isinstance(deep_array, (list, tuple)):
+        for v in deep_array:
+            ret.extend(v)
+    return ret

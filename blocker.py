@@ -4,6 +4,7 @@ import json
 
 import requests
 
+from transitions_graph_utils import is_browser_window_title
 from utils import close_tab, close_window
 from cross_platform import notify
 
@@ -259,8 +260,8 @@ class MultiBlocker(object):
     def __init__(self, dry_run=False):
         self.dry_run = dry_run
         settings = json.load(open(SETTINGS_PATH, encoding='utf-8'))
-        self.BROWSERS_LIST = settings['BROWSERS_LIST']
-        self.BLACKLISTED_PAGES_PARTS = settings['BLACKLISTED_PAGES_PARTS']
+        self.BROWSERS_BINARIES_NAMES_LIST = settings['BROWSERS_BINARIES_NAMES_LIST']
+        self.BLACKLISTED_WINDOWS_TITLES_PARTS = settings['BLACKLISTED_WINDOWS_TITLES_PARTS']
 
     def close_tab(self):
         if self.dry_run:
@@ -275,16 +276,16 @@ class MultiBlocker(object):
             close_window()
 
     def is_bad_browser_window(self, window_title):
-        is_browser = any([
+        is_browser_binary = any([
             (
                 window_title.lower().startswith(browser_binary_name.lower()) or
                 window_title.lower().endswith(browser_binary_name.lower())
             )
-            for browser_binary_name in self.BROWSERS_LIST])
-        return is_browser \
+            for browser_binary_name in self.BROWSERS_BINARIES_NAMES_LIST])
+        return (is_browser_binary or is_browser_window_title(window_title)) \
             and any([
-                blacklisted_part in window_title
-                for blacklisted_part in self.BLACKLISTED_PAGES_PARTS
+                blacklisted_part.lower() in window_title.lower()
+                for blacklisted_part in self.BLACKLISTED_WINDOWS_TITLES_PARTS
         ])
 
     def notify_about_violation(self):

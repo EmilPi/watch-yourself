@@ -1,0 +1,35 @@
+{
+  "BROWSERS_BINARIES_NAMES_LIST": [
+    "Safari",
+    "GeckoMain",
+    "firefox",
+    "chromium",
+    "chromium-browser",
+    "chrome",
+    "opera",
+    "Microsoft Edge"
+  ],
+  "BROWSERS_WINDOWS_TITLES_STRINGS": {
+    "gecko": [
+      "Mozilla Firefox"
+    ],
+    "webkit": [
+      "Google Chrome",
+      "Chromium",
+      "Brave",
+      "Opera",
+      "Microsoft Edge"
+    ]
+  },
+  "BLACKLISTED_WINDOWS_TITLES_PARTS": [
+    "YouTube",
+    "Facebook",
+    "News",
+    "Новости",
+    "Habr",
+    "Хабр",
+    "Yandex Zen",
+    "Яндекс Дзен",
+    "Яндекс.Видео"
+  ]
+}
