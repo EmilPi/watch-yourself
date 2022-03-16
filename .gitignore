@@ -4,6 +4,7 @@ windows.txt
 archive
 profile.json
 settings.json
+windows_groups.json
 health/
 log_*.txt
 
